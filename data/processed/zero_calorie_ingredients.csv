@@ -1,0 +1,63 @@
+ingredient,category,reason
+water,liquid,zero energy; assumed available
+ice water,liquid,zero energy; assumed available
+boiling water,liquid,zero energy; assumed available
+cold water,liquid,zero energy; assumed available
+hot water,liquid,zero energy; assumed available
+salt,seasoning,zero energy
+kosher salt,seasoning,zero energy
+sea salt,seasoning,zero energy
+table salt,seasoning,zero energy
+garlic salt,seasoning,negligible at recipe quantities
+pepper,seasoning,negligible at recipe quantities
+black pepper,seasoning,negligible at recipe quantities
+white pepper,seasoning,negligible at recipe quantities
+baking soda,leavening,zero energy
+baking powder,leavening,negligible at recipe quantities
+cream of tartar,leavening,negligible at recipe quantities
+yeast,leavening,negligible at recipe quantities
+vanilla,flavoring,negligible at recipe quantities
+vanilla extract,flavoring,negligible at recipe quantities
+food coloring,flavoring,negligible at recipe quantities
+lemon juice,seasoning,trace quantities only
+lime juice,seasoning,trace quantities only
+vinegar,condiment,negligible at recipe quantities
+worcestershire sauce,condiment,negligible at recipe quantities
+hot sauce,condiment,negligible at recipe quantities
+soy sauce,condiment,negligible at recipe quantities
+cinnamon,spice,negligible at recipe quantities
+nutmeg,spice,negligible at recipe quantities
+paprika,spice,negligible at recipe quantities
+cumin,spice,negligible at recipe quantities
+coriander,spice,negligible at recipe quantities
+chili powder,spice,negligible at recipe quantities
+cayenne,spice,negligible at recipe quantities
+oregano,spice,negligible at recipe quantities
+basil,spice,negligible at recipe quantities
+thyme,spice,negligible at recipe quantities
+rosemary,spice,negligible at recipe quantities
+sage,spice,negligible at recipe quantities
+marjoram,spice,negligible at recipe quantities
+bay leaf,spice,negligible at recipe quantities
+allspice,spice,negligible at recipe quantities
+clove,spice,negligible at recipe quantities
+curry powder,spice,negligible at recipe quantities
+turmeric,spice,negligible at recipe quantities
+cardamom,spice,negligible at recipe quantities
+anise seed,spice,negligible at recipe quantities
+caraway seed,spice,negligible at recipe quantities
+fennel seed,spice,negligible at recipe quantities
+italian seasoning,spice,negligible at recipe quantities
+poultry seasoning,spice,negligible at recipe quantities
+garlic powder,spice,negligible at recipe quantities
+onion powder,spice,negligible at recipe quantities
+dry mustard,spice,negligible at recipe quantities
+parsley,garnish,negligible at recipe quantities
+cilantro,garnish,negligible at recipe quantities
+dill,garnish,negligible at recipe quantities
+celery seed,spice,negligible at recipe quantities
+poppy seed,spice,negligible at recipe quantities
+sesame seed,garnish,negligible at recipe quantities
+cooking spray,fat,one spray is negligible
+dill weed,garnish,negligible at recipe quantities
+liquid smoke,flavoring,negligible at recipe quantities

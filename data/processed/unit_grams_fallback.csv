@@ -1,0 +1,32 @@
+unit,grams,note
+g,1,metric base
+kg,1000,metric base
+ml,1,water density
+l,1000,water density
+oz,28.35,avoirdupois ounce
+lb,453.59,avoirdupois pound
+cup,240,water-density cup; prefer ingredient-specific value when available
+tbsp,15,water-density tablespoon
+tsp,5,water-density teaspoon
+fl_oz,29.57,fluid ounce
+stick,113,butter stick
+clove,3,one garlic clove
+slice,25,generic slice
+piece,50,generic piece
+whole,100,generic whole item
+can,400,generic can
+jar,300,generic jar
+package,200,generic package
+pkg,200,generic package
+box,300,generic box
+bunch,100,generic bunch of herbs
+head,500,generic head of lettuce or cabbage
+stalk,40,generic celery stalk
+sprig,2,herb sprig
+dash,0.6,seasoning dash
+pinch,0.3,seasoning pinch
+drop,0.05,liquid drop
+handful,30,generic handful
+medium,110,generic medium produce item
+large,150,generic large produce item
+small,80,generic small produce item

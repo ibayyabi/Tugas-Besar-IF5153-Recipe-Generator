@@ -1,0 +1,19 @@
+# Raw datasets are fetched by scripts/download_raw_data.py, never committed.
+data/raw/recipenlg/*
+data/raw/calories/*
+!data/raw/**/.gitkeep
+
+# Derived artifacts produced by preprocessing notebooks / pipeline code.
+data/processed/recipes.parquet
+data/processed/ingredients.parquet
+artifacts/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+.DS_Store

@@ -1,0 +1,72 @@
+ingredient,weight,category,note
+water,0.05,liquid,assumed available in every kitchen
+ice water,0.05,liquid,assumed available in every kitchen
+boiling water,0.05,liquid,assumed available in every kitchen
+salt,0.15,seasoning,always assumed available
+kosher salt,0.15,seasoning,always assumed available
+sea salt,0.15,seasoning,always assumed available
+table salt,0.15,seasoning,always assumed available
+garlic salt,0.15,seasoning,always assumed available
+pepper,0.15,seasoning,always assumed available
+black pepper,0.15,seasoning,always assumed available
+white pepper,0.2,seasoning,always assumed available
+cayenne,0.15,seasoning,always assumed available
+paprika,0.2,seasoning,always assumed available
+chili powder,0.2,seasoning,always assumed available
+cumin,0.2,seasoning,always assumed available
+coriander,0.2,seasoning,always assumed available
+curry powder,0.2,seasoning,always assumed available
+turmeric,0.2,seasoning,always assumed available
+cinnamon,0.2,seasoning,always assumed available
+nutmeg,0.2,seasoning,always assumed available
+allspice,0.2,seasoning,always assumed available
+clove,0.2,seasoning,always assumed available
+oregano,0.2,seasoning,always assumed available
+basil,0.2,seasoning,always assumed available
+thyme,0.2,seasoning,always assumed available
+rosemary,0.2,seasoning,always assumed available
+sage,0.2,seasoning,always assumed available
+marjoram,0.2,seasoning,always assumed available
+bay leaf,0.2,seasoning,always assumed available
+italian seasoning,0.2,seasoning,always assumed available
+poultry seasoning,0.2,seasoning,always assumed available
+dill,0.2,seasoning,always assumed available
+parsley,0.25,seasoning,often a garnish
+garlic powder,0.25,seasoning,powdered form is a pantry staple
+onion powder,0.25,seasoning,powdered form is a pantry staple
+dry mustard,0.25,seasoning,powdered form is a pantry staple
+baking powder,0.1,leavening,assumed available
+baking soda,0.1,leavening,assumed available
+yeast,0.1,leavening,assumed available
+cream of tartar,0.1,leavening,assumed available
+cornstarch,0.2,thickener,assumed available
+flour,0.35,baking,assumed available
+sugar,0.25,sweetener,assumed available
+white sugar,0.25,sweetener,assumed available
+brown sugar,0.25,sweetener,assumed available
+powdered sugar,0.25,sweetener,assumed available
+honey,0.3,sweetener,assumed available
+vanilla,0.15,flavoring,assumed available
+vanilla extract,0.15,flavoring,assumed available
+vegetable oil,0.2,fat,assumed available
+salad oil,0.2,fat,assumed available
+cooking oil,0.2,fat,assumed available
+olive oil,0.25,fat,assumed available
+cooking spray,0.05,fat,assumed available
+shortening,0.4,fat,assumed available
+butter,0.55,fat,often a staple but changes the dish
+margarine,0.55,fat,often a staple but changes the dish
+vinegar,0.2,condiment,assumed available
+soy sauce,0.3,condiment,assumed available
+worcestershire sauce,0.3,condiment,assumed available
+hot sauce,0.25,condiment,assumed available
+mustard,0.3,condiment,assumed available
+ketchup,0.3,condiment,assumed available
+mayonnaise,0.4,condiment,assumed available
+garlic,0.6,aromatic,most kitchens have it
+onion,0.7,aromatic,common but not universal
+green onion,0.4,garnish,optional garnish
+cilantro,0.3,garnish,optional garnish
+milk,0.8,dairy,commonly available
+cream,0.8,dairy,PRD reference weight
+water chestnut,0.5,vegetable,canned pantry item

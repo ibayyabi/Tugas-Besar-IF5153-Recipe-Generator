@@ -1,0 +1,978 @@
+{
+  "version": "1.0.0",
+  "description": "Hand-annotated Pipeline 1 test set. Each query pairs a natural-language pantry request with the structured query the extractor must produce. Ingredient strings are canonical (lowercase, singular) forms from data/processed/calorie_baseline.csv unless the surface form itself is canonical.",
+  "labeling_rules": {
+    "available_ingredients": "Surface forms are normalized to the canonical ingredient (lemma + alias). Ingredient mentions inside an exclusion clause never appear here.",
+    "excluded_ingredients": "One entry per excluded ingredient. 'no X or Y' yields two entries.",
+    "calorie_target": "Used for approximate targets: around, about, approximately, roughly.",
+    "calorie_max": "Used for upper bounds: under, below, max, maximum, less than, up to, no more than.",
+    "calorie_min": "Used for lower bounds and ranges: at least, minimum, over, between A and B.",
+    "unset": "null when the constraint is absent."
+  },
+  "queries": [
+    {
+      "id": "q001",
+      "query": "I have chicken, potato, carrot, onion and garlic.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "potato",
+          "carrot",
+          "onion",
+          "garlic"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q002",
+      "query": "I've got chickens, potatoes and some carrots.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "potato",
+          "carrot"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q003",
+      "query": "I have eggs, milk, butter and flour.",
+      "expected": {
+        "available_ingredients": [
+          "egg",
+          "milk",
+          "butter",
+          "flour"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q004",
+      "query": "Available: tomatoes, onions, garlic, olive oil.",
+      "expected": {
+        "available_ingredients": [
+          "tomato",
+          "onion",
+          "garlic",
+          "olive oil"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q005",
+      "query": "In my pantry I have rice, ground beef, bell peppers and canned tomatoes.",
+      "expected": {
+        "available_ingredients": [
+          "rice",
+          "ground beef",
+          "bell pepper",
+          "tomato"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q006",
+      "query": "I have salmon, lemon, dill and potatoes.",
+      "expected": {
+        "available_ingredients": [
+          "salmon",
+          "lemon",
+          "dill",
+          "potato"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q007",
+      "query": "I currently have black beans, corn, avocado and cilantro.",
+      "expected": {
+        "available_ingredients": [
+          "black bean",
+          "corn",
+          "avocado",
+          "cilantro"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q008",
+      "query": "I have chicken breasts, mushrooms, cream and parmesan cheese.",
+      "expected": {
+        "available_ingredients": [
+          "chicken breast",
+          "mushroom",
+          "cream",
+          "parmesan cheese"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q009",
+      "query": "Using shrimp, garlic, butter, parsley and spaghetti.",
+      "expected": {
+        "available_ingredients": [
+          "shrimp",
+          "garlic",
+          "butter",
+          "parsley",
+          "spaghetti"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q010",
+      "query": "I have tofu, soy sauce, ginger and green onions.",
+      "expected": {
+        "available_ingredients": [
+          "tofu",
+          "soy sauce",
+          "ginger",
+          "green onion"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q011",
+      "query": "I have apples, cinnamon, oats and honey.",
+      "expected": {
+        "available_ingredients": [
+          "apple",
+          "cinnamon",
+          "oat",
+          "honey"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q012",
+      "query": "I have pork chops, sweet potatoes, rosemary and garlic.",
+      "expected": {
+        "available_ingredients": [
+          "pork",
+          "sweet potato",
+          "rosemary",
+          "garlic"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q013",
+      "query": "I have chicken and potatoes, I want something under 500 calories.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "potato"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 500
+      }
+    },
+    {
+      "id": "q014",
+      "query": "I have pasta and tomatoes. Below 450 calories please.",
+      "expected": {
+        "available_ingredients": [
+          "pasta",
+          "tomato"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 450
+      }
+    },
+    {
+      "id": "q015",
+      "query": "I have eggs and spinach. Max 300 calories.",
+      "expected": {
+        "available_ingredients": [
+          "egg",
+          "spinach"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 300
+      }
+    },
+    {
+      "id": "q016",
+      "query": "I have chicken, rice and broccoli. Maximum 600 calories.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "rice",
+          "broccoli"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 600
+      }
+    },
+    {
+      "id": "q017",
+      "query": "I have oats, banana and milk. Less than 400 calories.",
+      "expected": {
+        "available_ingredients": [
+          "oat",
+          "banana",
+          "milk"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 400
+      }
+    },
+    {
+      "id": "q018",
+      "query": "I have tuna, rice and cucumber. Up to 350 calories.",
+      "expected": {
+        "available_ingredients": [
+          "tuna",
+          "rice",
+          "cucumber"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 350
+      }
+    },
+    {
+      "id": "q019",
+      "query": "I have beef and noodles. No more than 700 calories.",
+      "expected": {
+        "available_ingredients": [
+          "beef",
+          "noodle"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 700
+      }
+    },
+    {
+      "id": "q020",
+      "query": "I have chicken, potato and carrot. I want something around 500 calories.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "potato",
+          "carrot"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": 500,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q021",
+      "query": "I have rice and carrots. About 450 calories.",
+      "expected": {
+        "available_ingredients": [
+          "rice",
+          "carrot"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": 450,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q022",
+      "query": "I have pasta and chicken. Approximately 600 calories.",
+      "expected": {
+        "available_ingredients": [
+          "pasta",
+          "chicken"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": 600,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q023",
+      "query": "I have beans, rice and cheese. Roughly 550 calories.",
+      "expected": {
+        "available_ingredients": [
+          "bean",
+          "rice",
+          "cheese"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": 550,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q024",
+      "query": "I have salmon, rice and asparagus. Around 650 calories.",
+      "expected": {
+        "available_ingredients": [
+          "salmon",
+          "rice",
+          "asparagus"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": 650,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q025",
+      "query": "I have chicken, potato, carrot and onion. Between 400 and 600 calories.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "potato",
+          "carrot",
+          "onion"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": 400,
+        "calorie_max": 600
+      }
+    },
+    {
+      "id": "q026",
+      "query": "I have eggs, spinach and mushrooms. Between 250 and 350 calories.",
+      "expected": {
+        "available_ingredients": [
+          "egg",
+          "spinach",
+          "mushroom"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": 250,
+        "calorie_max": 350
+      }
+    },
+    {
+      "id": "q027",
+      "query": "I have rice and shrimp. At least 400 calories.",
+      "expected": {
+        "available_ingredients": [
+          "rice",
+          "shrimp"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": 400,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q028",
+      "query": "I have pasta and tomato. Minimum 500 calories.",
+      "expected": {
+        "available_ingredients": [
+          "pasta",
+          "tomato"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": 500,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q029",
+      "query": "I have chicken, tomato, onion and garlic. Under 600 calories. No cheese.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "tomato",
+          "onion",
+          "garlic"
+        ],
+        "excluded_ingredients": [
+          "cheese"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 600
+      }
+    },
+    {
+      "id": "q030",
+      "query": "I have potato and onion. No milk.",
+      "expected": {
+        "available_ingredients": [
+          "potato",
+          "onion"
+        ],
+        "excluded_ingredients": [
+          "milk"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q031",
+      "query": "I have chicken and rice. Without cheese.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "rice"
+        ],
+        "excluded_ingredients": [
+          "cheese"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q032",
+      "query": "I have potatoes, butter and garlic. Without milk or butter.",
+      "expected": {
+        "available_ingredients": [
+          "potato",
+          "garlic"
+        ],
+        "excluded_ingredients": [
+          "milk",
+          "butter"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q033",
+      "query": "I have pasta and tomatoes. No cheese or cream.",
+      "expected": {
+        "available_ingredients": [
+          "pasta",
+          "tomato"
+        ],
+        "excluded_ingredients": [
+          "cheese",
+          "cream"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q034",
+      "query": "I have eggs and flour. Exclude peanuts.",
+      "expected": {
+        "available_ingredients": [
+          "egg",
+          "flour"
+        ],
+        "excluded_ingredients": [
+          "peanut"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q035",
+      "query": "I have rice and chicken. I don't want garlic.",
+      "expected": {
+        "available_ingredients": [
+          "rice",
+          "chicken"
+        ],
+        "excluded_ingredients": [
+          "garlic"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q036",
+      "query": "I have beef and noodles. Avoid mushrooms.",
+      "expected": {
+        "available_ingredients": [
+          "beef",
+          "noodle"
+        ],
+        "excluded_ingredients": [
+          "mushroom"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q037",
+      "query": "I have salmon and rice. No butter and no cream.",
+      "expected": {
+        "available_ingredients": [
+          "salmon",
+          "rice"
+        ],
+        "excluded_ingredients": [
+          "butter",
+          "cream"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q038",
+      "query": "I have spinach and eggs. Without bacon.",
+      "expected": {
+        "available_ingredients": [
+          "spinach",
+          "egg"
+        ],
+        "excluded_ingredients": [
+          "bacon"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q039",
+      "query": "I have chicken and broccoli. Without soy sauce.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "broccoli"
+        ],
+        "excluded_ingredients": [
+          "soy sauce"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q040",
+      "query": "I have tofu and rice. No peanuts or sesame seeds.",
+      "expected": {
+        "available_ingredients": [
+          "tofu",
+          "rice"
+        ],
+        "excluded_ingredients": [
+          "peanut",
+          "sesame seed"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q041",
+      "query": "I have chicken, potato, carrot, onion and garlic. Around 500 calories. No cheese.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "potato",
+          "carrot",
+          "onion",
+          "garlic"
+        ],
+        "excluded_ingredients": [
+          "cheese"
+        ],
+        "calorie_target": 500,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q042",
+      "query": "I have chicken, tomato, onion and garlic. Under 600 calories. No cheese or milk.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "tomato",
+          "onion",
+          "garlic"
+        ],
+        "excluded_ingredients": [
+          "cheese",
+          "milk"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 600
+      }
+    },
+    {
+      "id": "q043",
+      "query": "I have eggs, milk and flour. About 400 calories, without butter.",
+      "expected": {
+        "available_ingredients": [
+          "egg",
+          "milk",
+          "flour"
+        ],
+        "excluded_ingredients": [
+          "butter"
+        ],
+        "calorie_target": 400,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q044",
+      "query": "I have beef, noodles and mushrooms. Between 500 and 700 calories, no cream.",
+      "expected": {
+        "available_ingredients": [
+          "beef",
+          "noodle",
+          "mushroom"
+        ],
+        "excluded_ingredients": [
+          "cream"
+        ],
+        "calorie_target": null,
+        "calorie_min": 500,
+        "calorie_max": 700
+      }
+    },
+    {
+      "id": "q045",
+      "query": "I have shrimp, garlic, butter and pasta. Under 550 calories. No cheese.",
+      "expected": {
+        "available_ingredients": [
+          "shrimp",
+          "garlic",
+          "butter",
+          "pasta"
+        ],
+        "excluded_ingredients": [
+          "cheese"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 550
+      }
+    },
+    {
+      "id": "q046",
+      "query": "I have oats, banana, milk and honey. Around 350 calories, no nuts.",
+      "expected": {
+        "available_ingredients": [
+          "oat",
+          "banana",
+          "milk",
+          "honey"
+        ],
+        "excluded_ingredients": [
+          "nut"
+        ],
+        "calorie_target": 350,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q047",
+      "query": "I have tofu, broccoli, rice and soy sauce. No peanuts. Around 450 calories.",
+      "expected": {
+        "available_ingredients": [
+          "tofu",
+          "broccoli",
+          "rice",
+          "soy sauce"
+        ],
+        "excluded_ingredients": [
+          "peanut"
+        ],
+        "calorie_target": 450,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q048",
+      "query": "I have ground beef, tomato, onion and pasta. Maximum 650 calories, without mushrooms.",
+      "expected": {
+        "available_ingredients": [
+          "ground beef",
+          "tomato",
+          "onion",
+          "pasta"
+        ],
+        "excluded_ingredients": [
+          "mushroom"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 650
+      }
+    },
+    {
+      "id": "q049",
+      "query": "I have chicken, sweet potato and spinach. Between 300 and 500 calories, no milk.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "sweet potato",
+          "spinach"
+        ],
+        "excluded_ingredients": [
+          "milk"
+        ],
+        "calorie_target": null,
+        "calorie_min": 300,
+        "calorie_max": 500
+      }
+    },
+    {
+      "id": "q050",
+      "query": "I have salmon, lemon, asparagus and rice. Around 600 calories. No butter.",
+      "expected": {
+        "available_ingredients": [
+          "salmon",
+          "lemon",
+          "asparagus",
+          "rice"
+        ],
+        "excluded_ingredients": [
+          "butter"
+        ],
+        "calorie_target": 600,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q051",
+      "query": "Recommend something with chicken.",
+      "expected": {
+        "available_ingredients": [
+          "chicken"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q052",
+      "query": "I want a low calorie dinner with eggs and spinach.",
+      "expected": {
+        "available_ingredients": [
+          "egg",
+          "spinach"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      },
+      "note": "Negative case: 'low calorie' is a qualitative phrase, not a numeric constraint. All calorie fields stay null."
+    },
+    {
+      "id": "q053",
+      "query": "I have chicken and rice. 450 kcal.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "rice"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      },
+      "note": "Negative case: the MVP recognizes the word 'calories'; 'kcal' is intentionally out of scope, so no constraint is extracted."
+    },
+    {
+      "id": "q054",
+      "query": "I have potatoes, carrots and beef. Around 700 kcal.",
+      "expected": {
+        "available_ingredients": [
+          "potato",
+          "carrot",
+          "beef"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": 700,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q055",
+      "query": "I have eggs, cheese, ham and bread. No butter.",
+      "expected": {
+        "available_ingredients": [
+          "egg",
+          "cheese",
+          "ham",
+          "bread"
+        ],
+        "excluded_ingredients": [
+          "butter"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q056",
+      "query": "I have broccoli, cauliflower and chicken. Max 450 calories. Without cheese.",
+      "expected": {
+        "available_ingredients": [
+          "broccoli",
+          "cauliflower",
+          "chicken"
+        ],
+        "excluded_ingredients": [
+          "cheese"
+        ],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 450
+      }
+    },
+    {
+      "id": "q057",
+      "query": "I have rice, egg and green onion. Around 400 calories, no soy sauce.",
+      "expected": {
+        "available_ingredients": [
+          "rice",
+          "egg",
+          "green onion"
+        ],
+        "excluded_ingredients": [
+          "soy sauce"
+        ],
+        "calorie_target": 400,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q058",
+      "query": "I have tomatoes, garlic, olive oil and spaghetti. Under 500 calories.",
+      "expected": {
+        "available_ingredients": [
+          "tomato",
+          "garlic",
+          "olive oil",
+          "spaghetti"
+        ],
+        "excluded_ingredients": [],
+        "calorie_target": null,
+        "calorie_min": null,
+        "calorie_max": 500
+      }
+    },
+    {
+      "id": "q059",
+      "query": "I have chicken, cream and mushrooms. About 550 calories. No onions.",
+      "expected": {
+        "available_ingredients": [
+          "chicken",
+          "cream",
+          "mushroom"
+        ],
+        "excluded_ingredients": [
+          "onion"
+        ],
+        "calorie_target": 550,
+        "calorie_min": null,
+        "calorie_max": null
+      }
+    },
+    {
+      "id": "q060",
+      "query": "I have ground beef, beans, rice and tomato. Between 500 and 800 calories, no cheese.",
+      "expected": {
+        "available_ingredients": [
+          "ground beef",
+          "bean",
+          "rice",
+          "tomato"
+        ],
+        "excluded_ingredients": [
+          "cheese"
+        ],
+        "calorie_target": null,
+        "calorie_min": 500,
+        "calorie_max": 800
+      }
+    }
+  ]
+}

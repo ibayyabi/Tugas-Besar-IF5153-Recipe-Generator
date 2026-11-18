@@ -1,0 +1,200 @@
+ingredient,kcal_per_100g,matched_description,fdc_id,source
+almond,579.0,"Nuts, almonds",170567,USDA FDC SR Legacy
+anchovy,131.0,"Fish, anchovy, european, raw",174182,USDA FDC SR Legacy
+apple,52.0,"Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",171688,USDA FDC SR Legacy
+apple juice,46.0,"Apple juice, canned or bottled, unsweetened, with added ascorbic acid",167771,USDA FDC SR Legacy
+applesauce,42.0,"Applesauce, canned, unsweetened, with added ascorbic acid",167772,USDA FDC SR Legacy
+arugula,25.0,"Arugula, raw",169387,USDA FDC SR Legacy
+asparagus,20.0,"Asparagus, raw",168389,USDA FDC SR Legacy
+avocado,160.0,"Avocados, raw, all commercial varieties",171705,USDA FDC SR Legacy
+bacon,393.0,"Pork, cured, bacon, unprepared",168277,USDA FDC SR Legacy
+baking powder,51.0,"Leavening agents, baking powder, double-acting, straight phosphate",172804,USDA FDC SR Legacy
+baking soda,0.0,"Leavening agents, baking soda",175040,USDA FDC SR Legacy
+banana,89.0,"Bananas, raw",173944,USDA FDC SR Legacy
+basil,233.0,"Spices, basil, dried",171317,USDA FDC SR Legacy
+bay leaf,313.0,"Spices, bay leaf",170917,USDA FDC SR Legacy
+bean sprout,30.0,"Mung beans, mature seeds, sprouted, raw",169957,USDA FDC SR Legacy
+beef,139.0,"Beef, chuck, arm pot roast, separable lean only, trimmed to 1/8"" fat, choice, raw",174056,USDA FDC SR Legacy
+beef broth,7.0,"Soup, beef broth or bouillon canned, ready-to-serve",171538,USDA FDC SR Legacy
+beer,43.0,"Alcoholic beverage, beer, regular, all",168746,USDA FDC SR Legacy
+beet,43.0,"Beets, raw",169145,USDA FDC SR Legacy
+bell pepper,20.0,"Peppers, sweet, green, raw",170427,USDA FDC SR Legacy
+black bean,341.0,"Beans, black, mature seeds, raw",173734,USDA FDC SR Legacy
+blueberry,57.0,"Blueberries, raw",171711,USDA FDC SR Legacy
+bread,266.0,"Bread, white, commercially prepared (includes soft bread crumbs)",174924,USDA FDC SR Legacy
+bread crumb,395.0,"Bread, crumbs, dry, grated, plain",174928,USDA FDC SR Legacy
+broccoli,34.0,"Broccoli, raw",170379,USDA FDC SR Legacy
+brown rice,367.0,"Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",169703,USDA FDC SR Legacy
+brown sugar,380.0,"Sugars, brown",168833,USDA FDC SR Legacy
+butter,717.0,"Butter, salted",173410,USDA FDC SR Legacy
+buttermilk,40.0,"Milk, buttermilk, fluid, cultured, lowfat",170874,USDA FDC SR Legacy
+butternut squash,45.0,"Squash, winter, butternut, raw",169295,USDA FDC SR Legacy
+cabbage,25.0,"Cabbage, raw",169975,USDA FDC SR Legacy
+caper,23.0,"Capers, canned",172238,USDA FDC SR Legacy
+carrot,41.0,"Carrots, raw",170393,USDA FDC SR Legacy
+cashew,553.0,"Nuts, cashew nuts, raw",170162,USDA FDC SR Legacy
+cauliflower,25.0,"Cauliflower, raw",169986,USDA FDC SR Legacy
+cayenne,318.0,"Spices, pepper, red or cayenne",170932,USDA FDC SR Legacy
+celery,14.0,"Celery, raw",169988,USDA FDC SR Legacy
+cheddar cheese,403.0,"Cheese, cheddar (Includes foods for USDA's Food Distribution Program)",173414,USDA FDC SR Legacy
+cherry,63.0,"Cherries, sweet, raw",171719,USDA FDC SR Legacy
+chia seed,486.0,"Seeds, chia seeds, dried",170554,USDA FDC SR Legacy
+chicken,215.0,"Chicken, broilers or fryers, meat and skin, raw",171447,USDA FDC SR Legacy
+chicken breast,172.0,"Chicken, broilers or fryers, breast, meat and skin, raw",171474,USDA FDC SR Legacy
+chicken broth,6.0,"Soup, chicken broth, ready-to-serve",174536,USDA FDC SR Legacy
+chicken thigh,221.0,"Chicken, broilers or fryers, thigh, meat and skin, raw",172385,USDA FDC SR Legacy
+chickpea,378.0,"Chickpeas (garbanzo beans, bengal gram), mature seeds, raw",173756,USDA FDC SR Legacy
+chili powder,282.0,"Spices, chili powder",171319,USDA FDC SR Legacy
+chocolate cake,371.0,"Cake, chocolate, prepared from recipe without frosting",172697,USDA FDC SR Legacy
+chocolate chip,480.0,"Candies, semisweet chocolate",167976,USDA FDC SR Legacy
+cilantro,23.0,"Coriander (cilantro) leaves, raw",169997,USDA FDC SR Legacy
+cinnamon,247.0,"Spices, cinnamon, ground",171320,USDA FDC SR Legacy
+cocoa,228.0,"Cocoa, dry powder, unsweetened",169593,USDA FDC SR Legacy
+coconut,354.0,"Nuts, coconut meat, raw",170169,USDA FDC SR Legacy
+cod,82.0,"Fish, cod, Atlantic, raw",171955,USDA FDC SR Legacy
+coffee,2.0,"Beverages, coffee, brewed, breakfast blend",171881,USDA FDC SR Legacy
+condensed milk,321.0,"Milk, canned, condensed, sweetened",171275,USDA FDC SR Legacy
+corn,86.0,"Corn, sweet, yellow, raw",169998,USDA FDC SR Legacy
+cornmeal,362.0,"Cornmeal, whole-grain, yellow",169697,USDA FDC SR Legacy
+cornstarch,381.0,Cornstarch,169698,USDA FDC SR Legacy
+cottage cheese,98.0,"Cheese, cottage, creamed, large or small curd",172179,USDA FDC SR Legacy
+couscous,376.0,"Couscous, dry",169699,USDA FDC SR Legacy
+crab,87.0,"Crustaceans, crab, blue, raw",174204,USDA FDC SR Legacy
+cracker crumb,418.0,"Crackers, saltines (includes oyster, soda, soup)",172746,USDA FDC SR Legacy
+cranberry sauce,159.0,"Cranberry sauce, canned, sweetened",173961,USDA FDC SR Legacy
+cream,340.0,"Cream, fluid, heavy whipping",170859,USDA FDC SR Legacy
+cream cheese,350.0,"Cheese, cream",173418,USDA FDC SR Legacy
+cucumber,15.0,"Cucumber, with peel, raw",168409,USDA FDC SR Legacy
+cumin,375.0,"Spices, cumin seed",170923,USDA FDC SR Legacy
+date,277.0,"Dates, medjool",168191,USDA FDC SR Legacy
+egg,143.0,"Egg, whole, raw, fresh",171287,USDA FDC SR Legacy
+egg white,52.0,"Egg, white, raw, fresh",172183,USDA FDC SR Legacy
+egg yolk,322.0,"Egg, yolk, raw, fresh",172184,USDA FDC SR Legacy
+eggplant,25.0,"Eggplant, raw",169228,USDA FDC SR Legacy
+evaporated milk,107.0,"Milk, evaporated, 2% fat, with added vitamin A and vitamin D",171302,USDA FDC SR Legacy
+flaxseed,534.0,"Seeds, flaxseed",169414,USDA FDC SR Legacy
+flour,364.0,"Wheat flour, white, all-purpose, unenriched",169761,USDA FDC SR Legacy
+garlic,149.0,"Garlic, raw",169230,USDA FDC SR Legacy
+garlic powder,331.0,"Spices, garlic powder",171325,USDA FDC SR Legacy
+gelatin,335.0,"Gelatins, dry powder, unsweetened",169599,USDA FDC SR Legacy
+ginger,80.0,"Ginger root, raw",169231,USDA FDC SR Legacy
+green bean,31.0,"Beans, snap, green, raw",169961,USDA FDC SR Legacy
+green onion,32.0,"Onions, spring or scallions (includes tops and bulb), raw",170005,USDA FDC SR Legacy
+green pepper,20.0,"Peppers, sweet, green, raw",170427,USDA FDC SR Legacy
+ground beef,254.0,"Beef, ground, 80% lean meat / 20% fat, raw",174036,USDA FDC SR Legacy
+half and half,131.0,"Cream, fluid, half and half",171255,USDA FDC SR Legacy
+ham,164.0,"Ham, sliced, regular (approximately 11% fat)",173864,USDA FDC SR Legacy
+hazelnut,628.0,"Nuts, hazelnuts or filberts",170581,USDA FDC SR Legacy
+heavy cream,340.0,"Cream, fluid, heavy whipping",170859,USDA FDC SR Legacy
+honey,304.0,Honey,169640,USDA FDC SR Legacy
+horseradish,48.0,"Horseradish, prepared",173472,USDA FDC SR Legacy
+hot sauce,11.0,"Sauce, ready-to-serve, pepper or hot",174527,USDA FDC SR Legacy
+jalapeno,29.0,"Peppers, jalapeno, raw",168576,USDA FDC SR Legacy
+ketchup,101.0,Catsup,168556,USDA FDC SR Legacy
+kidney bean,333.0,"Beans, kidney, all types, mature seeds, raw",175193,USDA FDC SR Legacy
+lemon,29.0,"Lemons, raw, without peel",167746,USDA FDC SR Legacy
+lemon juice,22.0,"Lemon juice, raw",167747,USDA FDC SR Legacy
+lentil,352.0,"Lentils, raw",172420,USDA FDC SR Legacy
+lettuce,14.0,"Lettuce, iceberg (includes crisphead types), raw",169248,USDA FDC SR Legacy
+lime,30.0,"Limes, raw",168155,USDA FDC SR Legacy
+lime juice,25.0,"Lime juice, raw",168156,USDA FDC SR Legacy
+macaroni,371.0,"Pasta, dry, enriched",169736,USDA FDC SR Legacy
+mango,60.0,"Mangos, raw",169910,USDA FDC SR Legacy
+maple syrup,270.0,"Syrup, maple, Canadian",170276,USDA FDC SR Legacy
+margarine,719.0,"Margarine, regular, hard, soybean (hydrogenated)",171018,USDA FDC SR Legacy
+mayonnaise,680.0,"Salad dressing, mayonnaise, regular",171009,USDA FDC SR Legacy
+milk,61.0,"Milk, whole, 3.25% milkfat, with added vitamin D",171265,USDA FDC SR Legacy
+mint,70.0,"Peppermint, fresh",173474,USDA FDC SR Legacy
+mixed vegetable,49.0,"Vegetables, mixed, canned, drained solids",170065,USDA FDC SR Legacy
+molasses,290.0,Molasses,168820,USDA FDC SR Legacy
+mozzarella cheese,299.0,"Cheese, mozzarella, whole milk",170845,USDA FDC SR Legacy
+mushroom,22.0,"Mushrooms, white, raw",169251,USDA FDC SR Legacy
+mustard,60.0,"Mustard, prepared, yellow",172234,USDA FDC SR Legacy
+noodle,384.0,"Noodles, egg, dry, enriched",169731,USDA FDC SR Legacy
+nutmeg,525.0,"Spices, nutmeg, ground",171326,USDA FDC SR Legacy
+oat,379.0,"Cereals, oats, regular and quick, not fortified, dry",173904,USDA FDC SR Legacy
+oatmeal,379.0,"Cereals, oats, regular and quick, not fortified, dry",173904,USDA FDC SR Legacy
+oil,884.0,"Oil, soybean, salad or cooking",171411,USDA FDC SR Legacy
+olive,116.0,"Olives, ripe, canned (small-extra large)",169094,USDA FDC SR Legacy
+olive oil,884.0,"Oil, olive, salad or cooking",171413,USDA FDC SR Legacy
+onion,40.0,"Onions, raw",170000,USDA FDC SR Legacy
+onion powder,341.0,"Spices, onion powder",171327,USDA FDC SR Legacy
+orange,47.0,"Oranges, raw, all commercial varieties",169097,USDA FDC SR Legacy
+oregano,265.0,"Spices, oregano, dried",171328,USDA FDC SR Legacy
+paprika,282.0,"Spices, paprika",171329,USDA FDC SR Legacy
+parmesan cheese,392.0,"Cheese, parmesan, hard",170848,USDA FDC SR Legacy
+parsley,36.0,"Parsley, fresh",170416,USDA FDC SR Legacy
+pasta,371.0,"Pasta, dry, enriched",169736,USDA FDC SR Legacy
+pea,81.0,"Peas, green, raw",170419,USDA FDC SR Legacy
+peach,39.0,"Peaches, yellow, raw",169928,USDA FDC SR Legacy
+peanut,567.0,"Peanuts, all types, raw",172430,USDA FDC SR Legacy
+peanut butter,598.0,"Peanut butter, smooth style, without salt",172470,USDA FDC SR Legacy
+pecan,691.0,"Nuts, pecans",170182,USDA FDC SR Legacy
+pepper,251.0,"Spices, pepper, black",170931,USDA FDC SR Legacy
+pineapple,50.0,"Pineapple, raw, all varieties",169124,USDA FDC SR Legacy
+pinto bean,347.0,"Beans, pinto, mature seeds, raw (Includes foods for USDA's Food Distribution Program)",175199,USDA FDC SR Legacy
+pistachio,560.0,"Nuts, pistachio nuts, raw",170184,USDA FDC SR Legacy
+poppy seed,525.0,"Spices, poppy seed",171330,USDA FDC SR Legacy
+pork,143.0,"Pork, fresh, loin, blade (chops or roasts), bone-in, separable lean only, raw",168234,USDA FDC SR Legacy
+pork tenderloin,187.0,"Pork, fresh, loin, tenderloin, separable lean only, cooked, broiled",168313,USDA FDC SR Legacy
+potato,77.0,"Potatoes, flesh and skin, raw",170026,USDA FDC SR Legacy
+potato chip,532.0,"Snacks, potato chips, plain, salted",169677,USDA FDC SR Legacy
+powdered sugar,389.0,"Sugars, powdered",169656,USDA FDC SR Legacy
+pretzel,384.0,"Snacks, pretzels, hard, plain, salted",167555,USDA FDC SR Legacy
+pumpkin,26.0,"Pumpkin, raw",168448,USDA FDC SR Legacy
+pumpkin puree,34.0,"Pumpkin, canned, with salt",170527,USDA FDC SR Legacy
+pumpkin seed,559.0,"Seeds, pumpkin and squash seed kernels, dried",170556,USDA FDC SR Legacy
+quinoa,368.0,"Quinoa, uncooked",168874,USDA FDC SR Legacy
+radish,16.0,"Radishes, raw",169276,USDA FDC SR Legacy
+raisin,299.0,"Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program)",168165,USDA FDC SR Legacy
+raspberry,52.0,"Raspberries, raw",167755,USDA FDC SR Legacy
+red pepper,26.0,"Peppers, sweet, red, raw",170108,USDA FDC SR Legacy
+red wine,85.0,"Alcoholic beverage, wine, table, red",173190,USDA FDC SR Legacy
+rhubarb,21.0,"Rhubarb, raw",167758,USDA FDC SR Legacy
+rice,365.0,"Rice, white, long-grain, regular, raw, enriched",168877,USDA FDC SR Legacy
+ricotta cheese,150.0,"Cheese, ricotta, whole milk",170851,USDA FDC SR Legacy
+rosemary,331.0,"Spices, rosemary, dried",171333,USDA FDC SR Legacy
+sake,134.0,"Alcoholic beverage, rice (sake)",167723,USDA FDC SR Legacy
+salmon,208.0,"Fish, salmon, Atlantic, farmed, raw",175167,USDA FDC SR Legacy
+salsa,29.0,"Sauce, salsa, ready-to-serve",174524,USDA FDC SR Legacy
+salt,0.0,"Salt, table",173468,USDA FDC SR Legacy
+salt and pepper,251.0,"Spices, pepper, black",170931,USDA FDC SR Legacy
+sardine,208.0,"Fish, sardine, Atlantic, canned in oil, drained solids with bone",175139,USDA FDC SR Legacy
+sauerkraut,19.0,"Sauerkraut, canned, solids and liquids",169279,USDA FDC SR Legacy
+sausage,288.0,"Pork sausage, link/patty, unprepared",172934,USDA FDC SR Legacy
+sesame seed,573.0,"Seeds, sesame seeds, whole, dried",170150,USDA FDC SR Legacy
+shallot,72.0,"Shallots, raw",170499,USDA FDC SR Legacy
+shortening,900.0,"Shortening, household, lard and vegetable oil",172327,USDA FDC SR Legacy
+shrimp,85.0,"Crustaceans, shrimp, raw",175179,USDA FDC SR Legacy
+sour cream,198.0,"Cream, sour, cultured",171257,USDA FDC SR Legacy
+soy sauce,53.0,Soy sauce made from soy and wheat (shoyu),174277,USDA FDC SR Legacy
+spaghetti,371.0,"Pasta, dry, enriched",169736,USDA FDC SR Legacy
+spinach,23.0,"Spinach, raw",168462,USDA FDC SR Legacy
+strawberry,32.0,"Strawberries, raw",167762,USDA FDC SR Legacy
+sugar,387.0,"Sugars, granulated",169655,USDA FDC SR Legacy
+summer squash,16.0,"Squash, summer, all varieties, raw",170487,USDA FDC SR Legacy
+sunflower seed,584.0,"Seeds, sunflower seed kernels, dried",170562,USDA FDC SR Legacy
+sweet potato,86.0,"Sweet potato, raw, unprepared (Includes foods for USDA's Food Distribution Program)",168482,USDA FDC SR Legacy
+swiss cheese,393.0,"Cheese, swiss",171251,USDA FDC SR Legacy
+tarragon,295.0,"Spices, tarragon, dried",170937,USDA FDC SR Legacy
+thyme,276.0,"Spices, thyme, dried",170938,USDA FDC SR Legacy
+tilapia,96.0,"Fish, tilapia, raw",175176,USDA FDC SR Legacy
+tofu,144.0,"Tofu, raw, firm, prepared with calcium sulfate",172475,USDA FDC SR Legacy
+tomato,18.0,"Tomatoes, red, ripe, raw, year round average",170457,USDA FDC SR Legacy
+tomato juice,17.0,"Tomato juice, canned, with salt added",170458,USDA FDC SR Legacy
+tomato paste,82.0,"Tomato products, canned, paste, without salt added (Includes foods for USDA's Food Distribution Program)",170459,USDA FDC SR Legacy
+tomato sauce,24.0,"Tomato products, canned, sauce",170054,USDA FDC SR Legacy
+tortilla,306.0,"Tortillas, ready-to-bake or -fry, flour, refrigerated",175037,USDA FDC SR Legacy
+tuna,116.0,"Fish, tuna, light, canned in water, without salt, drained solids",171986,USDA FDC SR Legacy
+turkey,144.0,"Turkey, whole, meat and skin, raw",171081,USDA FDC SR Legacy
+vanilla,288.0,Vanilla extract,173471,USDA FDC SR Legacy
+vegetable oil,884.0,"Oil, soybean, salad or cooking",171411,USDA FDC SR Legacy
+vinegar,18.0,"Vinegar, distilled",172237,USDA FDC SR Legacy
+walnut,654.0,"Nuts, walnuts, english",170187,USDA FDC SR Legacy
+water,0.0,"Beverages, water, tap, well",175096,USDA FDC SR Legacy
+whiskey,231.0,"Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 80 proof",174815,USDA FDC SR Legacy
+whole wheat flour,332.0,"Wheat flour, whole-grain, soft wheat",168944,USDA FDC SR Legacy
+worcestershire sauce,77.0,"Sauce, worcestershire",171610,USDA FDC SR Legacy
+yeast,325.0,"Leavening agents, yeast, baker's, active dry",175043,USDA FDC SR Legacy
+yogurt,61.0,"Yogurt, plain, whole milk",171284,USDA FDC SR Legacy
+zucchini,17.0,"Squash, summer, zucchini, includes skin, raw",169291,USDA FDC SR Legacy

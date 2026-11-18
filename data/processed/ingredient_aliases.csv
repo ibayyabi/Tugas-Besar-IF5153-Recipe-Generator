@@ -1,0 +1,292 @@
+alias,canonical,note
+soda,baking soda,US recipe shorthand
+bicarbonate of soda,baking soda,UK term
+bicarb,baking soda,informal
+oleo,margarine,US vintage shorthand
+margarine,margarine,identity
+catsup,ketchup,variant spelling
+tomato ketchup,ketchup,redundant qualifier
+white sugar,sugar,US term for granulated sugar
+granulated sugar,sugar,descriptor
+caster sugar,sugar,UK fine sugar
+castor sugar,sugar,UK variant spelling
+confectioners sugar,powdered sugar,US term
+confectioner's sugar,powdered sugar,US term
+icing sugar,powdered sugar,UK term
+10x sugar,powdered sugar,US term
+demerara sugar,brown sugar,light brown sugar
+turbinado sugar,brown sugar,light brown sugar
+muscovado sugar,brown sugar,dark brown sugar
+hamburger,ground beef,US shorthand
+ground hamburger,ground beef,US shorthand
+minced beef,ground beef,UK term
+mince,ground beef,UK term
+beef mince,ground beef,UK term
+crisco,shortening,brand name
+salad oil,vegetable oil,generic cooking oil
+cooking oil,vegetable oil,generic cooking oil
+veggie oil,vegetable oil,informal
+canola oil,vegetable oil,generic cooking oil
+corn oil,vegetable oil,generic cooking oil
+sunflower oil,vegetable oil,generic cooking oil
+extra virgin olive oil,olive oil,descriptor
+evoo,olive oil,abbreviation
+whipping cream,heavy cream,US term
+heavy whipping cream,heavy cream,US term
+double cream,heavy cream,UK term
+single cream,cream,UK term
+half-and-half,half and half,variant spelling
+half & half,half and half,variant spelling
+sweetened condensed milk,condensed milk,descriptor
+condensed sweetened milk,condensed milk,word-order variant
+evaporated skim milk,evaporated milk,descriptor
+butter milk,buttermilk,variant spelling
+plain yogurt,yogurt,descriptor
+natural yogurt,yogurt,UK term
+yoghurt,yogurt,variant spelling
+greek yoghurt,yogurt,variant spelling
+sour milk,buttermilk,closest equivalent
+fromage frais,sour cream,closest equivalent
+grated cheese,cheddar cheese,assumed cheddar
+shredded cheese,cheddar cheese,assumed cheddar
+shredded cheddar,cheddar cheese,descriptor
+cheddar,cheddar cheese,short form
+sharp cheese,cheddar cheese,US term
+parmesan,parmesan cheese,short form
+parmigiano,parmesan cheese,Italian term
+parmigiano reggiano,parmesan cheese,Italian term
+mozzarella,mozzarella cheese,short form
+swiss,swiss cheese,short form
+emmental,swiss cheese,closest equivalent
+gruyere,swiss cheese,closest equivalent
+creamcheese,cream cheese,variant spelling
+neufchatel,cream cheese,closest equivalent
+paneer,cottage cheese,closest equivalent
+egg,egg,identity
+chicken egg,egg,descriptor
+large egg,egg,size descriptor
+egg white,egg white,identity
+egg yolk,egg yolk,identity
+scallion,green onion,US term
+spring onion,green onion,UK term
+green onions,green onion,plural of canonical
+capsicum,bell pepper,AU/NZ term
+sweet pepper,bell pepper,descriptor
+red bell pepper,red pepper,descriptor
+green bell pepper,green pepper,descriptor
+red capsicum,red pepper,AU/NZ term
+aubergine,eggplant,UK term
+courgette,zucchini,UK term
+coriander,cilantro,leaf form in US recipes
+coriander leaves,cilantro,leaf form
+fresh coriander,cilantro,UK term
+chinese parsley,cilantro,variant name
+flat leaf parsley,parsley,descriptor
+italian parsley,parsley,descriptor
+garbanzo bean,chickpea,variant name
+chick peas,chickpea,variant spelling
+snap bean,green bean,US term
+string bean,green bean,US term
+french bean,green bean,UK term
+haricot vert,green bean,French term
+cornflour,cornstarch,UK term
+corn starch,cornstarch,variant spelling
+corn flour,cornstarch,UK term
+all purpose flour,flour,descriptor
+plain flour,flour,UK term
+self raising flour,flour,leavening differs but calorie-equivalent
+self rising flour,flour,leavening differs but calorie-equivalent
+cake flour,flour,descriptor
+bread flour,flour,descriptor
+wheat flour,flour,descriptor
+wholemeal flour,whole wheat flour,UK term
+whole-wheat flour,whole wheat flour,variant spelling
+graham flour,whole wheat flour,US term
+oatmeal,oat,US term
+rolled oats,oat,descriptor
+quick oats,oat,descriptor
+instant oats,oat,descriptor
+oat flakes,oat,descriptor
+bread crumbs,bread crumb,plural
+breadcrumbs,bread crumb,variant
+dry bread crumbs,bread crumb,descriptor
+panko,bread crumb,Japanese style
+panko bread crumbs,bread crumb,plural
+cracker crumbs,cracker crumb,plural
+graham cracker crumbs,graham cracker crumb,plural
+graham crackers,graham cracker crumb,crushed in recipes
+saltine crackers,saltine cracker,plural
+soda crackers,saltine cracker,variant name
+spaghetti,spaghetti,identity
+macaroni,pasta,descriptor
+penne,pasta,shape
+rigatoni,pasta,shape
+fusilli,pasta,shape
+linguine,pasta,shape
+fettuccine,pasta,shape
+tagliatelle,pasta,shape
+farfalle,pasta,shape
+orzo,pasta,shape
+noodles,noodle,plural
+egg noodles,noodle,descriptor
+basmati rice,rice,descriptor
+jasmine rice,rice,descriptor
+long grain rice,rice,descriptor
+white rice,rice,descriptor
+instant rice,rice,descriptor
+chicken stock,chicken broth,interchangeable in recipes
+chicken bouillon,chicken broth,interchangeable in recipes
+bouillon,chicken broth,interchangeable in recipes
+beef stock,beef broth,interchangeable in recipes
+beef bouillon,beef broth,interchangeable in recipes
+vegetable stock,chicken broth,closest equivalent
+soy,soy sauce,short form
+shoyu,soy sauce,Japanese term
+tamari,soy sauce,Japanese variant
+worcestershire,worcestershire sauce,short form
+worcestershire sauce,worcestershire sauce,identity
+worcestershire sauce powder,worcestershire sauce,descriptor
+mayo,mayonnaise,informal
+salad dressing,mayonnaise,US shorthand in some regions
+tabasco,hot sauce,brand name
+tabasco sauce,hot sauce,brand name
+hot pepper sauce,hot sauce,descriptor
+chili sauce,hot sauce,closest equivalent
+tomato puree,tomato sauce,closest equivalent
+tomato passata,tomato sauce,closest equivalent
+tomato paste,tomato paste,identity
+canned tomatoes,tomato,descriptor
+tomatoes,tomato,plural
+cherry tomatoes,tomato,descriptor
+roma tomatoes,tomato,descriptor
+plum tomatoes,tomato,descriptor
+sun dried tomatoes,tomato,descriptor
+kosher salt,salt,descriptor
+sea salt,salt,descriptor
+table salt,salt,descriptor
+rock salt,salt,descriptor
+black pepper,pepper,descriptor
+white pepper,pepper,descriptor
+ground pepper,pepper,descriptor
+freshly ground black pepper,pepper,descriptor
+cracked pepper,pepper,descriptor
+ground cinnamon,cinnamon,descriptor
+cinnamon stick,cinnamon,descriptor
+vanilla extract,vanilla,descriptor
+pure vanilla extract,vanilla,descriptor
+vanilla essence,vanilla,UK term
+imitation vanilla,vanilla,descriptor
+garlic clove,garlic,descriptor
+clove garlic,garlic,word-order variant
+cloves garlic,garlic,word-order variant
+clove of garlic,garlic,word-order variant
+cloves of garlic,garlic,word-order variant
+fresh garlic,garlic,descriptor
+minced garlic,garlic,descriptor
+garlic,garlic,identity
+onion,onion,identity
+yellow onion,onion,descriptor
+white onion,onion,descriptor
+red onion,onion,descriptor
+sweet onion,onion,descriptor
+vidalia onion,onion,descriptor
+boiling water,water,descriptor
+hot water,water,descriptor
+cold water,water,descriptor
+warm water,water,descriptor
+lukewarm water,water,descriptor
+ice water,water,descriptor
+ice cold water,water,descriptor
+tap water,water,descriptor
+whole milk,milk,descriptor
+skim milk,milk,descriptor
+low fat milk,milk,descriptor
+2% milk,milk,descriptor
+1% milk,milk,descriptor
+unsalted butter,butter,descriptor
+salted butter,butter,descriptor
+sweet butter,butter,US term
+melted butter,butter,state descriptor
+chicken breasts,chicken breast,plural
+chicken breast halves,chicken breast,descriptor
+boneless chicken breast,chicken breast,descriptor
+boneless skinless chicken breast,chicken breast,descriptor
+chicken thighs,chicken thigh,plural
+ground turkey,turkey,descriptor
+turkey breast,turkey,descriptor
+pork chop,pork,cut
+bacon strips,bacon,descriptor
+ham steak,ham,cut
+ground pork,pork,descriptor
+mixed nuts,mixed nuts,identity
+nuts,mixed nuts,generic
+chopped nuts,mixed nuts,generic
+walnuts,walnut,plural
+almonds,almond,plural
+pecans,pecan,plural
+cashews,cashew,plural
+peanuts,peanut,plural
+pistachios,pistachio,plural
+raisins,raisin,plural
+dessicated coconut,coconut,UK term
+shredded coconut,coconut,descriptor
+flaked coconut,coconut,descriptor
+cheese,cheddar cheese,"generic cheese, assumed cheddar"
+all-purpose,flour,truncated form of all-purpose flour
+crackers,saltine cracker,generic cracker
+american cheese,process cheese,US cheese product
+velveeta cheese,process cheese,brand name
+onion soup,onion soup mix,dry mix used as seasoning
+mushroom soup,cream of mushroom soup,shorthand
+cream of chicken,cream of chicken soup,shorthand
+parsley flakes,parsley,dried form
+shell,pasta,pasta shell shape
+chocolate,chocolate chip,generic chocolate in baking
+bisquick,biscuit mix,brand name
+green chilies,green chili,plural
+vanilla pudding,vanilla pudding mix,shorthand
+instant vanilla pudding,vanilla pudding mix,shorthand
+vanilla instant pudding,vanilla pudding mix,word-order variant
+bay leaves,bay leaf,plural
+spaghetti sauce,tomato sauce,closest equivalent
+corn meal,cornmeal,variant spelling
+corn flakes,corn flake crumb,crushed in recipes
+ground chuck,ground beef,cut
+miracle whip,mayonnaise,"brand name, closest equivalent"
+miracle,mayonnaise,truncated brand name
+pimentos,pimento,plural
+beans,bean,generic legume
+peaches,peach,plural
+dates,date,plural
+cherries,cherry,plural
+cranberries,cranberry,plural
+chives,chive,plural
+pecan halves,pecan,descriptor
+crab meat,crab,descriptor
+cake mix,yellow cake mix,generic
+yellow cake,yellow cake mix,shorthand
+vanilla flavoring,vanilla,shorthand
+rice krispies,rice cereal,brand name
+mixed vegetables,mixed vegetable,plural
+potato chips,potato chip,plural
+red wine vinegar,red wine,closest equivalent
+lemon zest,lemon,"zest is negligible, peel calories ignored"
+lime zest,lime,"zest is negligible, peel calories ignored"
+orange zest,orange,"zest is negligible, peel calories ignored"
+curry,curry powder,shorthand
+leeks,leek,plural
+tarragon leaves,tarragon,descriptor
+capers,caper,plural
+crabmeat,crab,variant
+cocoa powder,cocoa,descriptor
+lemon rind,lemon,rind calories ignored
+orange rind,orange,rind calories ignored
+cumin seeds,cumin,descriptor
+black peppercorns,pepper,descriptor
+gingerroot,ginger,variant
+confectioners,powdered sugar,truncated form
+green chile,green chili,singular form
+buns,bread,closest equivalent
+broccoli florets,broccoli,descriptor
+fresh raspberries,raspberry,descriptor
+yellow squash,summer squash,closest equivalent
