@@ -26,7 +26,7 @@ def highlight_spans(text: str, spans: list[tuple[int, int]], color: str, label: 
         if start < cursor or end > len(text):
             continue
         pieces.append(_escape(text[cursor:start]))
-        pieces.append(f'<span style="background:{color};border-radius:3px;padding:0 2px" title="{label}">{_escape(text[start:end])}</span>')
+        pieces.append(f'<span style="background:{color};color:#1a1a1a;border-radius:3px;padding:0 2px" title="{label}">{_escape(text[start:end])}</span>')
         cursor = end
     pieces.append(_escape(text[cursor:]))
     return "".join(pieces)
@@ -46,7 +46,7 @@ def highlight_matches(text: str, matches: Iterable, base_color: str = COLOR_INGR
             title += f" ({match.score:.2f})"
         color = COLOR_NER if match.method == "ner" else base_color
         pieces.append(
-            f'<span style="background:{color};border-radius:3px;padding:0 2px" title="{_escape(title)}">'
+            f'<span style="background:{color};color:#1a1a1a;border-radius:3px;padding:0 2px" title="{_escape(title)}">'
             f"{_escape(text[match.start:match.end])}</span>"
         )
         cursor = match.end

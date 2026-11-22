@@ -1,4 +1,4 @@
-"""CookFromPantry — interactive pipeline interface (Streamlit).
+"""YummyTummy — interactive pipeline interface (Streamlit).
 
 Run:  streamlit run app/streamlit_app.py
 
@@ -24,11 +24,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+LOGO = REPO_ROOT / "app" / "assets" / "logo.png"
+
 import streamlit as st
 
 st.set_page_config(
-    page_title="CookFromPantry",
-    page_icon="🍳",
+    page_title="YummyTummy",
+    page_icon=str(LOGO),
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -105,7 +107,7 @@ def _preset_weights(preset: str) -> tuple[float, float, float, float]:
 
 def sidebar() -> dict:
     """Collect configuration; returns a dict of run settings."""
-    st.sidebar.title("🍳 CookFromPantry")
+    st.sidebar.image(str(LOGO), width=180)
     st.sidebar.caption("Pantry-aware & calorie-constrained recipe recommender — no frontier LLM in the loop.")
 
     mode = st.sidebar.radio("Mode tampilan", [MODE_CHAT, MODE_DASHBOARD], horizontal=True)
@@ -220,7 +222,7 @@ def run_dashboard(settings: dict, run: dict) -> None:
 
 
 def render_landing() -> None:
-    st.title("🍳 CookFromPantry")
+    st.image(str(LOGO), width=420)
     st.markdown(
         """
         Tell the system what is in your pantry, any calorie target, and what you don't want —

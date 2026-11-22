@@ -77,7 +77,7 @@ def render_architecture() -> None:
 
     st.markdown("### Documents")
     st.markdown(
-        "- [PRD — prd_cookfrompantry.md](../prd_cookfrompantry.md)\n"
+        "- [PRD — prd_yummytummy.md](../prd_yummytummy.md)\n"
         "- [Design — project_design_recipe_generator.md](../project_design_recipe_generator.md)\n"
         "- [Pipeline 1 error analysis — report.md](../report.md)"
     )

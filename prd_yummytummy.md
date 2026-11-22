@@ -13,10 +13,10 @@
 
 ### 1.1 Product Name
 * **Official Name:** Pantry-Aware & Calorie-Constrained Recipe Recommender
-* **Working Name:** CookFromPantry
+* **Working Name:** YummyTummy
 
 ### 1.2 Product Summary
-**CookFromPantry** adalah sistem rekomendasi resep berbasis NLP yang membantu pengguna menemukan resep berdasarkan:
+**YummyTummy** adalah sistem rekomendasi resep berbasis NLP yang membantu pengguna menemukan resep berdasarkan:
 1. Bahan makanan yang saat ini dimiliki;
 2. Bahan yang tidak ingin digunakan;
 3. Target atau batas kalori;
@@ -74,7 +74,7 @@ Masalahnya, kemiripan tekstual saja belum cukup menjawab kebutuhan nyata penggun
 * Salah satunya berada jauh dari target kalori pengguna;
 * Salah satunya mengandung bahan yang secara eksplisit tidak diinginkan pengguna.
 
-Karena itu, objektif **CookFromPantry** bukan hanya:
+Karena itu, objektif **YummyTummy** bukan hanya:
 > *"Find the recipe most textually similar to the user's ingredients."*
 
 Melainkan:
@@ -109,7 +109,7 @@ Notebook tersebut juga telah memiliki *preprocessing* untuk dataset RecipeNLG:
 * *Fuzzy ingredient matching*;
 * *TF-IDF vectorization*.
 
-**CookFromPantry** akan menggunakan sebagian besar data dan *preprocessing* tersebut, tetapi mengganti *recommendation objective*:
+**YummyTummy** akan menggunakan sebagian besar data dan *preprocessing* tersebut, tetapi mengganti *recommendation objective*:
 
 | Existing Objective | Proposed Objective |
 | :--- | :--- |
@@ -878,7 +878,7 @@ cook-from-pantry/
 
 ## 45. Final System Definition
 
-**CookFromPantry** didefinisikan sebagai:
+**YummyTummy** didefinisikan sebagai:
 > *Constraint-aware information retrieval and recommendation system that recommends recipes from RecipeNLG by jointly considering textual ingredient relevance, pantry availability, missing ingredients, calorie compatibility, and explicit ingredient exclusions.*
 
 Sistem ini terdiri atas tiga *pipeline* utama NLP/IR:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch every external dataset CookFromPantry needs (stdlib only).
+"""Fetch every external dataset YummyTummy needs (stdlib only).
 
 Dataset inventory and rationale: data/README.md.
 
@@ -52,7 +52,7 @@ SAMPLE_CHUNK_BYTES = 800_000
 
 
 def _download(url: str, dest: Path) -> None:
-    req = urllib.request.Request(url, headers={"User-Agent": "cookfrompantry-dataset-prep/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "yummytummy-dataset-prep/1.0"})
     with urllib.request.urlopen(req, timeout=120) as resp:
         total = int(resp.headers.get("Content-Length") or 0)
         seen = 0
@@ -72,7 +72,7 @@ def _range(url: str, start: int, end: int) -> bytes:
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "cookfrompantry-dataset-prep/1.0",
+            "User-Agent": "yummytummy-dataset-prep/1.0",
             "Range": f"bytes={start}-{end}",
         },
     )
@@ -81,7 +81,7 @@ def _range(url: str, start: int, end: int) -> bytes:
 
 
 def _corpus_size(url: str) -> int:
-    req = urllib.request.Request(url, headers={"User-Agent": "cookfrompantry-dataset-prep/1.0", "Range": "bytes=0-0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "yummytummy-dataset-prep/1.0", "Range": "bytes=0-0"})
     with urllib.request.urlopen(req, timeout=120) as resp:
         content_range = resp.headers.get("Content-Range", "")
         if "/" in content_range:

@@ -1,0 +1,10 @@
+# Yummy Tummy brand palette — sampled from app/assets/logo.png:
+# navy indigo #151343 (wordmark) · periwinkle #6C69A1 (subtitle) ·
+# indigo #543CD6 (gradient core) · teal #3CBBD3 · orange #F88D44 · pink #BC5FA1.
+# Light base because the logo is designed for a white background.
+[theme]
+base = "light"
+primaryColor = "#543CD6"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F3FB"
+textColor = "#151343"

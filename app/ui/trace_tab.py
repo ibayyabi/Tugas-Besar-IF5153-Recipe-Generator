@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 import pandas as pd
 import streamlit as st
 
@@ -14,8 +16,56 @@ from app.ui.helpers import (
 )
 
 
-def render_p1_trace(p1_trace, approach=None, key_prefix: str = "") -> None:
-    """Query understanding: normalization, constraint spans, matching evidence."""
+def _mono_html(html_text: str, dim: bool = False) -> None:
+    """Monospace inline-HTML block; ``dim`` softens secondary contexts."""
+    style = "font-family:monospace;font-size:0.95rem;line-height:1.6"
+    if dim:
+        style += ";opacity:0.75"
+    st.markdown(f"<div style='{style}'>{html_text}</div>", unsafe_allow_html=True)
+
+
+def _match_table(matches: Iterable) -> None:
+    """Ingredient matching evidence as a table."""
+    if not matches:
+        st.info("No ingredient matches in the available-ingredient context.")
+        return
+    rows = [
+        {
+            "surface": m.surface,
+            "canonical": m.canonical,
+            "method": m.method,
+            "score": m.score,
+            "span": f"[{m.start}:{m.end}]",
+        }
+        for m in matches
+    ]
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+
+def _candidate_rows(p2_trace) -> list[dict]:
+    return [
+        {
+            "rank": i + 1,
+            "recipe_id": c["recipe_id"],
+            "title": c["title"][:60],
+            "score": c["tfidf_score"],
+            "#ingredients": len(c["canonical_ingredients"]),
+            "kcal": c["total_calories"],
+        }
+        for i, c in enumerate(p2_trace.candidates)
+    ]
+
+
+def render_p1_trace(p1_trace, approach=None, key_prefix: str = "", compact: bool = False) -> None:
+    """Query understanding: normalization, constraint spans, matching evidence.
+
+    ``compact`` (chat bubbles) leads with the highlighted contexts and nests
+    the tabular evidence one disclosure deep; the dashboard keeps it all open.
+    """
+    if compact:
+        _render_p1_compact(p1_trace, approach, key_prefix)
+        return
+
     st.subheader("Pipeline 1 — Query & Constraint Understanding")
     st.caption(f"Approach: `{p1_trace.approach}`")
 
@@ -24,55 +74,50 @@ def render_p1_trace(p1_trace, approach=None, key_prefix: str = "") -> None:
     with left:
         st.markdown("**Step 1 — text normalization + constraint spans**")
         calorie_html = highlight_spans(p1_trace.normalized_text, p1_trace.calorie_spans, COLOR_CALORIE, "calorie constraint")
-        st.markdown(
-            f"<div style='font-family:monospace;font-size:0.95rem;line-height:1.6'>{calorie_html}</div>",
-            unsafe_allow_html=True,
-        )
+        _mono_html(calorie_html)
         if p1_trace.exclusion_spans:
             st.caption("Red = exclusion clause (blanked for ingredient matching); amber = calorie span (blanked first).")
         st.markdown("**Step 2 — masked matching context (what the matcher actually sees)**")
-        st.markdown(
-            f"<div style='font-family:monospace;font-size:0.95rem;color:#666'>{p1_trace.available_context.strip() or '(empty)'}</div>",
-            unsafe_allow_html=True,
-        )
+        _mono_html(p1_trace.available_context.strip() or "(empty)", dim=True)
 
     with right:
         st.markdown("**Step 3 — structured query**")
-        st.json(p1_trace.structured_query, expanded=True)
+        st.json(p1_trace.structured_query, expanded=False)
 
     st.markdown("**Step 4 — ingredient matching evidence**")
-    available_matches = p1_trace.available_trace.matches
-    if available_matches:
-        rows = [
-            {
-                "surface": m.surface,
-                "canonical": m.canonical,
-                "method": m.method,
-                "score": m.score,
-                "span": f"[{m.start}:{m.end}]",
-            }
-            for m in available_matches
-        ]
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-    else:
-        st.info("No ingredient matches in the available-ingredient context.")
+    _match_table(p1_trace.available_trace.matches)
 
     st.markdown("**Highlighted matches on the available context**")
-    st.markdown(
-        f"<div style='font-family:monospace;font-size:0.95rem;line-height:1.6'>"
-        f"{highlight_matches(p1_trace.available_context, available_matches)}</div>",
-        unsafe_allow_html=True,
-    )
+    _mono_html(highlight_matches(p1_trace.available_context, p1_trace.available_trace.matches))
     st.caption("Green = vocabulary match; blue = model-detected mention (hover for provenance).")
 
     excluded_matches = p1_trace.excluded_trace.matches
     if p1_trace.exclusion_context.strip():
         st.markdown("**Exclusion clause matching**")
-        st.markdown(
-            f"<div style='font-family:monospace;font-size:0.95rem;line-height:1.6'>"
-            f"{highlight_matches(p1_trace.exclusion_context, excluded_matches, base_color=COLOR_EXCLUSION)}</div>",
-            unsafe_allow_html=True,
+        _mono_html(highlight_matches(p1_trace.exclusion_context, excluded_matches, base_color=COLOR_EXCLUSION))
+
+    approach_extras = p1_trace.available_trace.extras
+    if approach_extras.get("tokens") and approach is not None:
+        render_ner_evidence(approach_extras, approach, p1_trace.raw_query, key_prefix=key_prefix)
+
+
+def _render_p1_compact(p1_trace, approach, key_prefix: str) -> None:
+    """Chat-bubble variant: highlighted contexts first, evidence nested one level."""
+    _mono_html(highlight_spans(p1_trace.normalized_text, p1_trace.calorie_spans, COLOR_CALORIE, "calorie constraint"))
+    _mono_html(highlight_matches(p1_trace.available_context, p1_trace.available_trace.matches))
+    if p1_trace.exclusion_context.strip():
+        _mono_html(
+            highlight_matches(p1_trace.exclusion_context, p1_trace.excluded_trace.matches, base_color=COLOR_EXCLUSION)
         )
+    st.caption("Amber = kalori (dibuang duluan) · merah = larangan · hijau/biru = bahan yang cocok (hover untuk detail).")
+
+    with st.expander("📋 Evidence — masked context, structured query & tabel match"):
+        st.markdown("**Masked matching context**")
+        _mono_html(p1_trace.available_context.strip() or "(empty)", dim=True)
+        st.markdown("**Structured query**")
+        st.json(p1_trace.structured_query, expanded=False)
+        st.markdown("**Ingredient matching evidence**")
+        _match_table(p1_trace.available_trace.matches)
 
     approach_extras = p1_trace.available_trace.extras
     if approach_extras.get("tokens") and approach is not None:
@@ -93,7 +138,7 @@ def render_ner_evidence(extras: dict, approach, raw_query: str, key_prefix: str 
         st.caption("No tokens to display.")
         return
 
-    tag_style = {"B-ING": "background:#9fd3f0", "I-ING": "background:#d7ecf9", "O": ""}
+    tag_style = {"B-ING": "background:#9fd3f0;color:#1a1a1a", "I-ING": "background:#d7ecf9;color:#1a1a1a", "O": ""}
     chips = " ".join(
         f"<code style='{tag_style.get(row['tag'], '')};border-radius:3px;padding:1px 4px'>{_html_token(row['token'])}"
         f"<sub style='color:#888'>{row['tag'][0] if row['tag'] != 'O' else ''}</sub></code>"
@@ -157,8 +202,16 @@ def render_attention_heatmap(attention: dict) -> None:
     )
 
 
-def render_p2_trace(p2_trace) -> None:
-    """Candidate retrieval: query representation and scored candidates."""
+def render_p2_trace(p2_trace, compact: bool = False) -> None:
+    """Candidate retrieval: query representation and scored candidates.
+
+    ``compact`` (chat bubbles) leads with the candidate table and nests the
+    query representation; the dashboard keeps the two side by side.
+    """
+    if compact:
+        _render_p2_compact(p2_trace)
+        return
+
     st.subheader("Pipeline 2 — Candidate Recipe Retrieval")
     st.caption(f"Approach: `{p2_trace.approach}` ({p2_trace.score_type}) · top-{p2_trace.extras.get('top_n', '?')}")
 
@@ -175,25 +228,36 @@ def render_p2_trace(p2_trace) -> None:
             st.dataframe(pd.DataFrame(p2_trace.query_terms), use_container_width=True, hide_index=True)
     with right:
         st.markdown(f"**Top candidates by {p2_trace.score_type}**")
-        candidates = [
-            {
-                "rank": i + 1,
-                "recipe_id": c["recipe_id"],
-                "title": c["title"][:60],
-                "score": c["tfidf_score"],
-                "#ingredients": len(c["canonical_ingredients"]),
-                "kcal": c["total_calories"],
-            }
-            for i, c in enumerate(p2_trace.candidates)
-        ]
-        st.dataframe(pd.DataFrame(candidates), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(_candidate_rows(p2_trace)), use_container_width=True, hide_index=True)
         st.caption("These candidates (high recall) flow into Pipeline 3 for multi-criteria reranking.")
         if p2_trace.extras.get("matrix_shape") or p2_trace.extras.get("vectors_shape"):
             st.caption(f"Corpus representation: {p2_trace.extras.get('matrix_shape') or p2_trace.extras.get('vectors_shape')}")
 
 
-def render_p3_trace(recommendation, config) -> None:
-    """Reranking: weighted contributions and per-recipe breakdowns."""
+def _render_p2_compact(p2_trace) -> None:
+    """Chat-bubble variant: candidates first, query representation nested."""
+    st.dataframe(pd.DataFrame(_candidate_rows(p2_trace)), use_container_width=True, hide_index=True)
+    with st.expander("🔎 Query representation & term weights"):
+        st.code(p2_trace.query_text or "(empty)")
+        if p2_trace.query_terms and p2_trace.score_type == "tfidf-cosine":
+            st.caption("TF-IDF weights of the query vector (top 20)")
+            terms_df = pd.DataFrame(p2_trace.query_terms).set_index("term")
+            st.bar_chart(terms_df, height=280)
+        elif p2_trace.query_terms:
+            st.caption("Query tokens (dense: single embedding, no per-term weights)")
+            st.dataframe(pd.DataFrame(p2_trace.query_terms), use_container_width=True, hide_index=True)
+
+
+def render_p3_trace(recommendation, config, compact: bool = False) -> None:
+    """Reranking: weighted contributions and per-recipe breakdowns.
+
+    ``compact`` (chat bubbles) shows only the score-composition chart — the
+    per-recipe detail already sits in the cards above the trace.
+    """
+    if compact:
+        _render_p3_compact(recommendation, config)
+        return
+
     st.subheader("Pipeline 3 — Multi-Criteria Reranking")
     st.caption(
         f"α={config.alpha} β={config.beta} γ={config.gamma} δ={config.delta} · "
@@ -237,3 +301,18 @@ def render_p3_trace(recommendation, config) -> None:
             else:
                 st.success("No excluded ingredients.")
             st.caption(f"Ingredient weights: {cov.ingredient_weights}")
+
+
+def _render_p3_compact(recommendation, config) -> None:
+    """Chat-bubble variant: the score chart only; cards above carry per-recipe detail."""
+    rows = []
+    for ranked in recommendation.recommendations:
+        row = {"recipe": f"#{ranked.rank} {ranked.recipe.title[:38]}"}
+        row.update(score_components(ranked, config))
+        rows.append(row)
+    st.bar_chart(pd.DataFrame(rows).set_index("recipe"), height=220)
+    st.caption(
+        f"Bobot: α={config.alpha} β={config.beta} γ={config.gamma} δ={config.delta} · "
+        f"{recommendation.total_candidates} kandidat → Top-{len(recommendation.recommendations)} · "
+        f"tersaring {recommendation.filtered_out_exclusion} larangan, {recommendation.filtered_out_calorie} kalori"
+    )

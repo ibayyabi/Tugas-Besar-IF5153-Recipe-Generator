@@ -4,7 +4,7 @@ NLP/IR course project (IF5153). Recipe recommender that jointly scores textual i
 relevance, pantry coverage, missing ingredients, calorie compatibility, and explicit
 ingredient exclusions — no generative LLM in the loop.
 
-* Requirements: [`prd_cookfrompantry.md`](prd_cookfrompantry.md)
+* Requirements: [`prd_yummytummy.md`](prd_yummytummy.md)
 * Design: [`project_design_recipe_generator.md`](project_design_recipe_generator.md)
 * Data: [`data/README.md`](data/README.md) — every dataset, its source, license, and which
   pipeline consumes it.

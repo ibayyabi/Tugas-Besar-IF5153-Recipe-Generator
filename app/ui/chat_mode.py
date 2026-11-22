@@ -14,11 +14,20 @@ import streamlit as st
 from app.ui.trace_tab import render_p1_trace, render_p2_trace, render_p3_trace
 
 WELCOME = (
-    "Halo! Saya asisten **CookFromPantry** — bukan LLM, melainkan tiga pipeline NLP deterministik "
+    "Halo! Saya asisten **YummyTummy** — bukan LLM, melainkan tiga pipeline NLP deterministik "
     "(query understanding → retrieval → pantry-aware reranking). "
     "Ceritakan bahan yang Anda punya, target kalori, dan bahan yang tidak ingin dipakai. "
     "Contoh: *\"I have chicken, potato and garlic. Around 500 calories, no cheese.\"*"
 )
+
+# Ready-made queries covering every constraint the parser understands (PRD §12.5–12.6):
+# ingredient list, calorie target/max/range, and exclusions. Click sends it verbatim.
+TEMPLATE_QUERIES = [
+    "I have chicken, potato and garlic. Around 500 calories, no cheese.",
+    "i have rice and egg under 400 calories",
+    "I have tofu, broccoli and carrot. No soy sauce, at most 350 calories.",
+    "i have pasta and tomato sauce between 300 and 500 calories",
+]
 
 
 def render_chat_mode(settings: dict, exec_fn) -> None:
@@ -35,16 +44,32 @@ def render_chat_mode(settings: dict, exec_fn) -> None:
             else:
                 _render_assistant_message(message, index)
 
+    template_click = _render_template_chips()
     prompt = st.chat_input("Ketik bahan / target kalori / larangan…")
-    if not prompt or not prompt.strip():
+    query = prompt.strip() if prompt and prompt.strip() else template_click
+    if not query:
         return
+    _submit_query(query, settings, exec_fn, history)
 
-    st.session_state.messages.append({"role": "user", "content": prompt.strip()})
+
+def _render_template_chips() -> str | None:
+    """One-click example queries above the input; returns the clicked template."""
+    st.caption("Bingung ngetik apa? Coba salah satu contoh:")
+    clicked = None
+    for column, template in zip(st.columns(len(TEMPLATE_QUERIES)), TEMPLATE_QUERIES):
+        if column.button(template, use_container_width=True):
+            clicked = template
+    return clicked
+
+
+def _submit_query(query: str, settings: dict, exec_fn, history: list) -> None:
+    """Run one stateless query through the pipeline and append both messages."""
+    st.session_state.messages.append({"role": "user", "content": query})
     with st.chat_message("user"):
-        st.markdown(prompt.strip())
+        st.markdown(query)
 
     with st.chat_message("assistant"):
-        run = exec_fn(prompt.strip(), settings)
+        run = exec_fn(query, settings)
         _render_assistant_message(
             {"role": "assistant", "content": _summary(run), "run": run},
             index=len(history),  # the message being appended below
@@ -110,10 +135,13 @@ def _render_recipe_cards(recommendation) -> None:
 
 
 def _render_behind_the_scenes(run: dict, index: int) -> None:
-    label = f"🔬 Balik layar — pipeline trace ({run['p1_trace'].approach} → {run['p2_trace'].approach})"
-    with st.expander(label):
-        render_p1_trace(run["p1_trace"], approach=run["p1_approach"], key_prefix=f"m{index}-")
-        st.divider()
-        render_p2_trace(run["p2_trace"])
-        st.divider()
-        render_p3_trace(run["recommendation"], run["config"])
+    """One collapsed expander per pipeline stage, each labeled with its takeaway."""
+    p2 = run["p2_trace"]
+    recommendation = run["recommendation"]
+    st.caption("🔬 Balik layar — buka satu tahap untuk jejak pipeline lengkapnya")
+    with st.expander(f"1 · Query understanding — `{run['p1_trace'].approach}`"):
+        render_p1_trace(run["p1_trace"], approach=run["p1_approach"], key_prefix=f"m{index}-", compact=True)
+    with st.expander(f"2 · Retrieval — {p2.extras.get('top_n', '?')} kandidat via `{p2.approach}`"):
+        render_p2_trace(p2, compact=True)
+    with st.expander(f"3 · Reranking — Top-{len(recommendation.recommendations)} dari {recommendation.total_candidates} kandidat"):
+        render_p3_trace(recommendation, run["config"], compact=True)
