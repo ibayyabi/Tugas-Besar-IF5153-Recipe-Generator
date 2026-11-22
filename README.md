@@ -1,4 +1,4 @@
-# CookFromPantry — Pantry-Aware & Calorie-Constrained Recipe Recommender
+# YummyTummy — Pantry-Aware & Calorie-Constrained Recipe Recommender
 
 NLP/IR course project (IF5153). Recipe recommender that jointly scores textual ingredient
 relevance, pantry coverage, missing ingredients, calorie compatibility, and explicit
