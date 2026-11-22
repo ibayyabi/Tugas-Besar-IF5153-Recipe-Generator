@@ -219,7 +219,7 @@ bacon strips,bacon,descriptor
 ham steak,ham,cut
 ground pork,pork,descriptor
 mixed nuts,mixed nuts,identity
-nuts,mixed nuts,generic
+nuts,nut,generic
 chopped nuts,mixed nuts,generic
 walnuts,walnut,plural
 almonds,almond,plural
@@ -231,7 +231,7 @@ raisins,raisin,plural
 dessicated coconut,coconut,UK term
 shredded coconut,coconut,descriptor
 flaked coconut,coconut,descriptor
-cheese,cheddar cheese,"generic cheese, assumed cheddar"
+cheese,cheese,generic cheese (kcal proxied to cheddar)
 all-purpose,flour,truncated form of all-purpose flour
 crackers,saltine cracker,generic cracker
 american cheese,process cheese,US cheese product

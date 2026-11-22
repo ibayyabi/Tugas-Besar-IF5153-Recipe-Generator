@@ -14,12 +14,19 @@ from __future__ import annotations
 import csv
 import re
 import statistics
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "calories"
 OUT = ROOT / "data" / "processed"
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+# Same plural folding the pipelines use (stdlib-only module, keeps USDA keys aligned).
+from src.preprocessing.ingredient_normalizer import singularize  # noqa: E402
 
 ENERGY_IDS = ("1008", "2047", "2048")  # Energy kcal, Atwater general, Atwater specific
 
@@ -58,21 +65,6 @@ def base_ingredient(description: str) -> str:
     tokens = head.split(" ")
     tokens[-1] = singularize(tokens[-1])
     return " ".join(tokens)
-
-
-def singularize(word: str) -> str:
-    """Cheap plural folding so 'eggs'/'egg' and 'carrots'/'carrot' share a key."""
-    if len(word) < 4 or word.endswith(("ss", "us", "is")):
-        return word
-    if word.endswith("ies"):
-        return word[:-3] + "y"
-    if word.endswith("oes"):
-        return word[:-2]
-    if word.endswith(("ses", "xes", "zes", "ches", "shes")):
-        return word[:-2]
-    if word.endswith("s"):
-        return word[:-1]
-    return word
 
 
 def read_csv(path: Path) -> list[dict]:

@@ -84,3 +84,5 @@ chocolate syrup,279,reference value for chocolate syrup,manual
 pumpkin pie spice,342,mixed ground spices,manual
 garam masala,379,mixed ground spices,manual
 lard,902,reference value for lard,manual
+nut,607,generic nut aggregate (exclusion vocabulary),manual
+cheese,403,generic cheese (assumed cheddar),manual

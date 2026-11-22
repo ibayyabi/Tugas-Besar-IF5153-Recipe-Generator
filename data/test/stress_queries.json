@@ -1,0 +1,116 @@
+{
+  "version": "1.0.0",
+  "description": "Pipeline 1 robustness battery: surface noise (casing, punctuation, abbreviation, contraction), negation forms, compound/compoundless ingredients, and unrecognized cue phrases. Labels follow the rules in annotated_queries.json.",
+  "labeling_rules": {
+    "available_ingredients": "Canonical surface forms; ingredient mentions inside an exclusion clause never appear here.",
+    "excluded_ingredients": "One entry per excluded ingredient; 'no X or Y' yields two entries.",
+    "calorie_max": "Under, below, max, maximum, less than, up to, no more than.",
+    "calorie_min": "At least, minimum, over, greater than, between A and B.",
+    "calorie_target": "Around, about, approximately, roughly, nearly, ~N.",
+    "unset": "null when the constraint is absent."
+  },
+  "queries": [
+    {
+      "id": "q001",
+      "query": "Im having chicken and potatoes. Need under 500 calories.",
+      "expected": {"available_ingredients": ["chicken", "potato"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": null, "calorie_max": 500}
+    },
+    {
+      "id": "q002",
+      "query": "I have eggs n spinach. Max 300 calories.",
+      "expected": {"available_ingredients": ["egg", "spinach"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": null, "calorie_max": 300}
+    },
+    {
+      "id": "q003",
+      "query": "I have beef & noodles. No more than 700 calories.",
+      "expected": {"available_ingredients": ["beef", "noodle"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": null, "calorie_max": 700}
+    },
+    {
+      "id": "q004",
+      "query": "We got oats, banana and milk. Less than 400 calories.",
+      "expected": {"available_ingredients": ["oat", "banana", "milk"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": null, "calorie_max": 400}
+    },
+    {
+      "id": "q005",
+      "query": "I have chicken, tomato, onion garlic. Under 600 cal. No cheese or milk.",
+      "expected": {"available_ingredients": ["chicken", "tomato", "onion", "garlic"], "excluded_ingredients": ["cheese", "milk"], "calorie_target": null, "calorie_min": null, "calorie_max": 600}
+    },
+    {
+      "id": "q006",
+      "query": "I have CHICKEN, Potato & Carrot. Around 500 calories!",
+      "expected": {"available_ingredients": ["chicken", "potato", "carrot"], "excluded_ingredients": [], "calorie_target": 500, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q007",
+      "query": "I have eggs, cheese, ham n bread. No butter.",
+      "expected": {"available_ingredients": ["egg", "cheese", "ham", "bread"], "excluded_ingredients": ["butter"], "calorie_target": null, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q008",
+      "query": "I have ground beef, beans rice & tomato. Between 500 and 800 cal, no cheese.",
+      "expected": {"available_ingredients": ["ground beef", "bean", "rice", "tomato"], "excluded_ingredients": ["cheese"], "calorie_target": null, "calorie_min": 500, "calorie_max": 800}
+    },
+    {
+      "id": "q009",
+      "query": "I have salmon n rice. No butter and no cream.",
+      "expected": {"available_ingredients": ["salmon", "rice"], "excluded_ingredients": ["butter", "cream"], "calorie_target": null, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q010",
+      "query": "I have tofu n rice. No peanuts or sesame seeds.",
+      "expected": {"available_ingredients": ["tofu", "rice"], "excluded_ingredients": ["peanut", "sesame seed"], "calorie_target": null, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q011",
+      "query": "I have tofu and rice. No peanuts OR sesame seeds.",
+      "expected": {"available_ingredients": ["tofu", "rice"], "excluded_ingredients": ["peanut", "sesame seed"], "calorie_target": null, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q012",
+      "query": "I have chicken sweetpotato n spinach. Between 300 & 500 cal, no milk.",
+      "expected": {"available_ingredients": ["chicken", "sweet potato", "spinach"], "excluded_ingredients": ["milk"], "calorie_target": null, "calorie_min": 300, "calorie_max": 500}
+    },
+    {
+      "id": "q013",
+      "query": "I have chicken and rice. Nothing dairy.",
+      "expected": {"available_ingredients": ["chicken", "rice"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q014",
+      "query": "I have chicken, potato, carrot, onion and garlic. Around 500 calories. No cheese.",
+      "expected": {"available_ingredients": ["chicken", "potato", "carrot", "onion", "garlic"], "excluded_ingredients": ["cheese"], "calorie_target": 500, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q015",
+      "query": "i have chicken potato carrot onion garlic. ~500 calories",
+      "expected": {"available_ingredients": ["chicken", "potato", "carrot", "onion", "garlic"], "excluded_ingredients": [], "calorie_target": 500, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q016",
+      "query": "i have chiken and tommato. around 400 cal.",
+      "expected": {"available_ingredients": ["chicken", "tomato"], "excluded_ingredients": [], "calorie_target": 400, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q017",
+      "query": "I have salmen n rise. No buter.",
+      "expected": {"available_ingredients": ["salmon", "rice"], "excluded_ingredients": ["butter"], "calorie_target": null, "calorie_min": null, "calorie_max": null}
+    },
+    {
+      "id": "q018",
+      "query": "I have onnion, garlik and bred under 450 kcal",
+      "expected": {"available_ingredients": ["onion", "garlic", "bread"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": null, "calorie_max": 450}
+    },
+    {
+      "id": "q019",
+      "query": "I have chicken and kale. No lamb.",
+      "expected": {"available_ingredients": ["chicken"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": null, "calorie_max": null},
+      "note": "kale and lamb are absent from the closed vocabulary; documented ceiling, not a parser bug."
+    },
+    {
+      "id": "q020",
+      "query": "I have chiken, cheeze n nudles. Between 250 & 600 cal, no mutton.",
+      "expected": {"available_ingredients": ["chicken", "cheese", "noodle"], "excluded_ingredients": [], "calorie_target": null, "calorie_min": 250, "calorie_max": 600},
+      "note": "mutton is absent from the vocabulary; the exclusion clause yields no entry."
+    }
+  ]
+}

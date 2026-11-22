@@ -6,3 +6,9 @@ pyarrow>=17.0
 nltk>=3.9
 streamlit>=1.40
 pytest>=8.0
+
+# Experimental approaches (small local models only — no frontier LLM API, PRD NFR-01)
+torch>=2.2
+transformers>=4.44
+sentence-transformers>=3.0
+torchvision>=0.19
