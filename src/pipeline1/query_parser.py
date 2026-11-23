@@ -22,9 +22,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 
-from src.pipeline1.constraint_extractor import exclusion_spans, extract_calorie_constraints
+from src.pipeline1.constraint_extractor import (
+    exclusion_spans,
+    extract_calorie_constraints,
+    normalize_query_text,
+)
 from src.pipeline1.ingredient_extractor import extract_ingredients
-from src.preprocessing.ingredient_normalizer import Vocabulary, normalize_text
+from src.preprocessing.ingredient_normalizer import Vocabulary
 
 
 @lru_cache(maxsize=1)
@@ -57,11 +61,14 @@ class ConstrainedQuery:
 
 def constrain_query(query: str) -> ConstrainedQuery:
     """Normalize a query and split it into masked contexts for ingredient matching."""
-    text = normalize_text(query)
+    if not isinstance(query, str):
+        raise TypeError(f"query must be a string, got {type(query).__name__}")
+    text, boundaries = normalize_query_text(query)
     calories, calorie_spans = extract_calorie_constraints(text)
     masked = _blank(text, calorie_spans)
+    masked_boundaries = _blank(boundaries, calorie_spans)
 
-    spans = exclusion_spans(masked)
+    spans = exclusion_spans(masked, masked_boundaries)
     return ConstrainedQuery(
         text=text,
         calories=calories,

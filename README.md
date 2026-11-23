@@ -45,10 +45,15 @@ python -m evaluation.experiment --verbose            # include per-query error d
 python -m pytest tests/                              # Pipeline 1 regression guards
 ```
 
-Constraint patterns: `under/below/max/maximum/less than/up to/no more than/at most`,
+Constraint patterns: `under/below/max/maximum/less than/up to/no more than/at most/not exceeding/less than or equal to`,
 `at least/minimum/min/over/more than/above`, `around/about/approximately/roughly/nearly`,
-`between A and B`; exclusions after `no/without/exclude/avoid/don't want`. A bare number
-(`450 kcal`) is deliberately not a constraint.
+`between A and B` and `A to B`, plus unit-bearing suffix forms (`500 calories max/or less`).
+Numbers followed by a time/volume/count unit (`under 20 minutes`, `over 2 cups`, `no more than 3 eggs`)
+are not calorie constraints. Exclusions follow
+`no/without/exclude/avoid/don't want/can't eat/allergic to/except/skip` and
+`X-free` / `X free`; an exclusion clause stops at punctuation or an availability
+transition (`... but I have ...`).
+A bare number (`450 kcal`) is deliberately not a constraint.
 
 ## Pipelines
 

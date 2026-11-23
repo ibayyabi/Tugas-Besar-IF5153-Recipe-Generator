@@ -29,9 +29,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.pipeline1.constraint_extractor import exclusion_spans, extract_calorie_constraints
+from src.pipeline1.constraint_extractor import (
+    exclusion_spans,
+    extract_calorie_constraints,
+    normalize_query_text,
+)
 from src.pipeline1.query_parser import _blank, load_vocabulary
-from src.preprocessing.ingredient_normalizer import Vocabulary, normalize_text, normalize_ingredient
+from src.preprocessing.ingredient_normalizer import Vocabulary, normalize_ingredient
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLE_CSV = ROOT / "data" / "samples" / "recipes_sample.csv"
@@ -157,14 +161,15 @@ def generate_one(names: list[str], excluded_pool: list[str], rng: random.Random,
     )
     query = f"{clause} {constraint}".strip()
 
-    # Production masking, verbatim from query_parser.parse_query.
-    text = normalize_text(query)
+    # Production masking, verbatim from query_parser.constrain_query.
+    text, boundaries = normalize_query_text(query)
     _, calorie_spans = extract_calorie_constraints(text)
     masked = _blank(text, calorie_spans)
-    spans = exclusion_spans(masked)
+    masked_boundaries = _blank(boundaries, calorie_spans)
+    spans = exclusion_spans(masked, masked_boundaries)
     available_context = _blank(masked, spans)
 
-    clause_text = normalize_text(clause)
+    clause_text = normalize_query_text(clause)[0]
     canonical = [vocab.canonical(normalize_ingredient(s)) or s for s in surfaces]
     return {
         "text": available_context,

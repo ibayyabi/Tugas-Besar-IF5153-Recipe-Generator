@@ -17,7 +17,9 @@ from src.pipeline1.approaches.base import ApproachTrace, IngredientApproach, Ing
 from src.preprocessing.ingredient_normalizer import Vocabulary, normalize_ingredient
 
 DEFAULT_MODEL_DIR = Path(__file__).resolve().parents[3] / "artifacts" / "ner_model"
-MAX_LENGTH = 96
+# DistilBERT's positional limit; training used short queries, so this only
+# stops long inputs from being silently cut at 96 tokens.
+MAX_LENGTH = 512
 
 
 def _pick_device(torch) -> "torch.device":

@@ -1,5 +1,7 @@
 """Pipeline 1 regression guards for behaviour the annotated set only implies."""
 
+import pytest
+
 from src.pipeline1.query_parser import parse_query
 
 
@@ -68,3 +70,98 @@ def test_range_accepts_collapsed_symbol_separator():
 def test_joined_compound_ingredient():
     result = parse_query("I have sweetpotato and spinach.")
     assert result["available_ingredients"] == ["sweet potato", "spinach"]
+
+
+def test_non_string_query_raises_clear_error():
+    with pytest.raises(TypeError, match="query must be a string"):
+        parse_query(None)  # type: ignore[arg-type]
+
+
+def test_exclusion_stops_at_clause_boundaries():
+    result = parse_query(
+        "I have chicken, rice and garlic but I don't want cheese and I have potato"
+    )
+    assert result["available_ingredients"] == ["chicken", "rice", "garlic", "potato"]
+    assert result["excluded_ingredients"] == ["cheese"]
+
+    result = parse_query("I have chicken and rice. No cheese. I have potato.")
+    assert result["available_ingredients"] == ["chicken", "rice", "potato"]
+    assert result["excluded_ingredients"] == ["cheese"]
+
+
+def test_discourse_no_does_not_swallow_the_pantry():
+    result = parse_query("No idea, I have chicken and rice")
+    assert result["available_ingredients"] == ["chicken", "rice"]
+    assert result["excluded_ingredients"] == []
+
+    result = parse_query("no problem, I have chicken")
+    assert result["available_ingredients"] == ["chicken"]
+
+
+def test_hyphenated_no_compound_is_not_an_exclusion_cue():
+    result = parse_query("I have no-bake cookie ingredients and oats")
+    assert "oat" in result["available_ingredients"]
+    assert result["excluded_ingredients"] == []
+
+
+def test_time_and_volume_units_are_not_calorie_bounds():
+    result = parse_query("I have chicken and rice, cook under 20 minutes")
+    assert result["calorie_max"] is None
+
+    result = parse_query("I have flour and sugar, over 2 cups of flour")
+    assert result["calorie_min"] is None
+
+
+def test_count_bounds_are_not_calorie_bounds_or_exclusions():
+    for query in ("I have eggs, no more than 3 eggs", "I have eggs, between 2 and 3 eggs"):
+        result = parse_query(query)
+        assert (result["calorie_min"], result["calorie_max"]) == (None, None)
+        assert result["excluded_ingredients"] == []
+
+
+def test_decimal_calorie_value_is_preserved():
+    result = parse_query("I have chicken, under 20.5 calories")
+    assert result["calorie_max"] == 20.5
+
+
+def test_non_positive_calorie_values_are_ignored():
+    negative = parse_query("I have chicken, under -500 calories")
+    zero = parse_query("I have chicken, around 0 calories")
+    assert negative["calorie_max"] is None
+    assert zero["calorie_target"] is None
+
+
+def test_calorie_suffix_and_range_phrasings():
+    for query in (
+        "I have chicken, 500 calories max",
+        "I have chicken, 500 calories or less",
+        "I have chicken, less than or equal to 500 calories",
+        "I have chicken, not exceeding 500 calories",
+    ):
+        assert parse_query(query)["calorie_max"] == 500
+
+    ranged = parse_query("I have chicken, 400 to 600 calories")
+    assert (ranged["calorie_min"], ranged["calorie_max"]) == (400, 600)
+
+
+def test_reversed_calorie_range_is_normalized():
+    result = parse_query("I have chicken, between 700 and 500 calories")
+    assert (result["calorie_min"], result["calorie_max"]) == (500, 700)
+
+
+def test_additional_exclusion_cues():
+    for phrase in ("I can't eat cheese", "allergic to cheese", "except cheese", "skip the cheese"):
+        result = parse_query(f"I have chicken, {phrase}")
+        assert result["available_ingredients"] == ["chicken"]
+        assert result["excluded_ingredients"] == ["cheese"]
+
+
+def test_free_suffix_exclusions():
+    assert parse_query("I have chicken, cheese-free")["excluded_ingredients"] == ["cheese"]
+    assert parse_query("I have chicken, sugar free")["excluded_ingredients"] == ["sugar"]
+
+
+def test_dont_have_is_an_exclusion():
+    result = parse_query("I don't have cheese, I have chicken")
+    assert result["available_ingredients"] == ["chicken"]
+    assert result["excluded_ingredients"] == ["cheese"]
