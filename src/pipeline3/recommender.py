@@ -53,6 +53,11 @@ def format_recommendation_card(
         f"Ingredient Coverage : {cov_pct}% ({len(cov.available_matched)}/{len(cov.recipe_ingredients)} ingredients)",
         f"Estimated Calories  : {cal_str}",
     ]
+    if cov.parse_confidence < 1.0:
+        lines.append(
+            f"Ingredient Parsing  : {round(cov.parse_confidence * 100)}% confidence "
+            f"({len(cov.recipe_ingredients)} usable ingredient(s))"
+        )
     if cal.constraint_type != "none":
         lines.append(f"Calorie Match       : {cal_pct}%")
 
@@ -117,7 +122,7 @@ def format_recommendations(
         blocks.append(f"[NOTICE] {result.fallback_message}")
 
     if not result.recommendations:
-        blocks.append("No exact recommendation found.")
+        blocks.append(result.no_match_reason or "No exact recommendation found.")
         return "\n\n".join(blocks)
 
     for ranked in result.recommendations:
@@ -150,6 +155,7 @@ def to_dict(result: RecommendationResult) -> dict[str, Any]:
         "is_fallback": result.is_fallback,
         "fallback_message": result.fallback_message,
         "relaxed_constraints": list(result.relaxed_constraints),
+        "no_match_reason": result.no_match_reason,
         "recommendations": [
             {
                 "rank": item.rank,
@@ -162,6 +168,7 @@ def to_dict(result: RecommendationResult) -> dict[str, Any]:
                 "weighted_coverage": round(item.coverage.weighted_coverage, 4),
                 "unweighted_coverage": round(item.coverage.unweighted_coverage, 4),
                 "missing_penalty": round(item.coverage.missing_penalty, 4),
+                "parse_confidence": round(item.coverage.parse_confidence, 4),
                 "available_matched": item.coverage.available_matched,
                 "missing_ingredients": item.coverage.missing_ingredients,
                 "missing_non_staples": item.coverage.missing_non_staples,

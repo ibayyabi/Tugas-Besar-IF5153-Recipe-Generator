@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import pickle
 from pathlib import Path
 from typing import Iterable
@@ -22,6 +23,18 @@ DEFAULT_CORPUS_PARQUET = DEFAULT_PROCESSED_DIR / "recipes.parquet"
 DEFAULT_STAPLES_PATH = DEFAULT_PROCESSED_DIR / "pantry_staples.csv"
 
 
+def corpus_signature(df: pd.DataFrame) -> str:
+    """Stable fingerprint of recipe order + canonical text for stale-artifact checks."""
+    digest = hashlib.sha256()
+    if "canonical_text" in df.columns:
+        documents = df["canonical_text"].fillna("").astype(str).tolist()
+    else:
+        documents = [" ".join(items) for items in df["canonical_ingredients"].tolist()]
+    for recipe_id, document in zip(df["recipe_id"].tolist(), documents):
+        digest.update(f"{recipe_id}\t{document}\n".encode("utf-8"))
+    return digest.hexdigest()[:16]
+
+
 def _load_staple_weights(path: Path | None) -> dict[str, float]:
     if path is None or not path.exists():
         return {}
@@ -34,13 +47,29 @@ def _load_staple_weights(path: Path | None) -> dict[str, float]:
     return weights
 
 
+def _ingredient_items(value: object) -> list[str]:
+    """Collect non-empty string ingredients; numbers/None are skipped, not stringified."""
+    if isinstance(value, str):
+        return [value] if value.strip() else []
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [item for item in value if isinstance(item, str) and item.strip()]
+    raise TypeError(
+        "query must be a structured query dict, a str, or a sequence of ingredient strings; "
+        f"got {type(value).__name__}"
+    )
+
+
 def query_to_text(query: dict | Iterable[str] | str) -> str:
     if isinstance(query, dict):
-        items = query.get("available_ingredients") or []
-        return " ".join(normalize_ingredient(str(item)) for item in items if str(item).strip())
-    if isinstance(query, str):
-        return normalize_ingredient(query)
-    return " ".join(normalize_ingredient(str(item)) for item in query if str(item).strip())
+        if "available_ingredients" not in query:
+            raise TypeError(
+                "structured query dict is missing 'available_ingredients' "
+                f"(keys: {sorted(query)})"
+            )
+        items = _ingredient_items(query["available_ingredients"])
+    else:
+        items = _ingredient_items(query)
+    return " ".join(normalized for normalized in map(normalize_ingredient, items) if normalized)
 
 
 class RecipeVectorizer:
@@ -75,6 +104,7 @@ class RecipeVectorizer:
             _load_staple_weights(self.staples_path) if self.use_staple_downweight else {}
         )
         self.feature_weights_: np.ndarray | None = None
+        self.corpus_signature: str | None = None
 
     def _build_feature_weights(self) -> np.ndarray:
         feature_names = self.vectorizer.get_feature_names_out()
@@ -125,6 +155,7 @@ class RecipeVectorizer:
             "use_staple_downweight": self.use_staple_downweight,
             "staple_weights": self.staple_weights,
             "feature_weights_": self.feature_weights_,
+            "corpus_signature": self.corpus_signature,
             "vectorizer": self.vectorizer,
         }
         with vec_file.open("wb") as fh:
@@ -144,6 +175,9 @@ class RecipeVectorizer:
         with Path(vectors_path).open("rb") as fh:
             recipe_vectors = pickle.load(fh)
         if isinstance(state, cls):
+            if not hasattr(state, "corpus_signature"):
+                state.corpus_signature = None
+            _validate_loaded_artifacts(state, recipe_vectors)
             return state, recipe_vectors
         instance = cls(
             max_features=state["max_features"],
@@ -156,8 +190,27 @@ class RecipeVectorizer:
         )
         instance.staple_weights = state["staple_weights"]
         instance.feature_weights_ = state["feature_weights_"]
+        instance.corpus_signature = state.get("corpus_signature")
         instance.vectorizer = state["vectorizer"]
+        _validate_loaded_artifacts(instance, recipe_vectors)
         return instance, recipe_vectors
+
+
+def _validate_loaded_artifacts(vectorizer: "RecipeVectorizer", recipe_vectors: csr_matrix) -> None:
+    if recipe_vectors.ndim != 2:
+        raise ValueError(f"recipe vectors must be 2-D, got shape {recipe_vectors.shape}")
+    n_features = len(vectorizer.vectorizer.get_feature_names_out())
+    if recipe_vectors.shape[1] != n_features:
+        raise ValueError(
+            f"recipe vectors have {recipe_vectors.shape[1]} columns but the vectorizer has "
+            f"{n_features} features; artifacts are from different fits — refit with fit_corpus_tfidf"
+        )
+    weights = vectorizer.feature_weights_
+    if weights is not None and len(weights) != n_features:
+        raise ValueError(
+            f"feature weights have {len(weights)} entries but the vectorizer has {n_features} features; "
+            "artifacts are corrupt — refit with fit_corpus_tfidf"
+        )
 
 
 def fit_corpus_tfidf(
@@ -182,6 +235,7 @@ def fit_corpus_tfidf(
         use_staple_downweight=use_staple_downweight,
     )
     recipe_vectors = vectorizer.fit_transform(documents)
+    vectorizer.corpus_signature = corpus_signature(df)
     vectorizer.save(
         recipe_vectors=recipe_vectors,
         vectorizer_path=vectorizer_path,

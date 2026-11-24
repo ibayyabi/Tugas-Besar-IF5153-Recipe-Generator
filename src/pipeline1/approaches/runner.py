@@ -38,7 +38,7 @@ def trace_parse_query(
     only the ingredient scan differs (approach traces instead of bare results).
     """
     vocab = vocab or load_vocabulary()
-    constrained = constrain_query(query)
+    constrained = constrain_query(query, vocab)
 
     available_trace = approach.trace(constrained.available_context, vocab)
     excluded_trace = approach.trace(constrained.exclusion_context, vocab)

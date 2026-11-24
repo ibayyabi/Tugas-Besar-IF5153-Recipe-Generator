@@ -189,6 +189,8 @@ def execute_pipeline(query: str, settings: dict) -> dict:
 
     with st.spinner("Pipeline 3 — reranking…"):
         recommendation = recommend(candidates, p1_trace.structured_query, top_k=settings["top_k"], config=config)
+        if not recommendation.recommendations and p2_trace.no_match_reason:
+            recommendation.no_match_reason = p2_trace.no_match_reason
 
     st.session_state.ner_attention = None  # dashboard heatmap slot; chat keys are per-message
     return {
@@ -251,7 +253,11 @@ def main() -> None:
         return
 
     if settings["run"] and settings.get("query", "").strip():
-        run = execute_pipeline(settings["query"], settings)
+        try:
+            run = execute_pipeline(settings["query"], settings)
+        except Exception as error:  # user-visible error, never a raw traceback; nothing broken cached
+            st.error(f"{type(error).__name__}: {error}")
+            return
         st.session_state.last_run = run
         run_dashboard(settings, run)
     elif st.session_state.get("last_run"):

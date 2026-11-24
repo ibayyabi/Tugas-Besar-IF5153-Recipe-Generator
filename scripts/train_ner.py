@@ -31,7 +31,9 @@ DEFAULT_DEV = REPO_ROOT / "artifacts" / "ner_training" / "dev.jsonl"
 DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "ner_model"
 
 LABELS = ["O", "B-ING", "I-ING"]
-MAX_LENGTH = 96
+# Must match inference (src/pipeline1/approaches/ner.py MAX_LENGTH=512): a
+# smaller training window silently taught the model to ignore long queries.
+MAX_LENGTH = 512
 
 
 def _align_labels(text: str, spans: list[list[int]], offsets: list[tuple[int, int]]) -> list[int]:

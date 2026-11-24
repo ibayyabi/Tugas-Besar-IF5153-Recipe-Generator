@@ -165,3 +165,41 @@ def test_dont_have_is_an_exclusion():
     result = parse_query("I don't have cheese, I have chicken")
     assert result["available_ingredients"] == ["chicken"]
     assert result["excluded_ingredients"] == ["cheese"]
+
+
+def test_unitless_count_before_known_ingredient_is_not_a_calorie_bound():
+    for query in (
+        "I have potatoes, under 2 potatoes",
+        "I have chicken, around 2 eggs",
+        "I have chicken, over 3 carrots",
+    ):
+        result = parse_query(query)
+        assert (result["calorie_target"], result["calorie_min"], result["calorie_max"]) == (
+            None,
+            None,
+            None,
+        )
+
+    # Bare shorthand without a following ingredient is still a calorie bound.
+    assert parse_query("I have chicken, under 500")["calorie_max"] == 500
+
+
+def test_comma_list_exclusion_keeps_all_items():
+    result = parse_query("I have chicken, no cheese, milk")
+    assert result["available_ingredients"] == ["chicken"]
+    assert result["excluded_ingredients"] == ["cheese", "milk"]
+
+    result = parse_query("I have chicken, no cheese, milk and butter")
+    assert result["excluded_ingredients"] == ["cheese", "milk", "butter"]
+
+    result = parse_query("I have chicken, no cheese, I have potato")
+    assert result["available_ingredients"] == ["chicken", "potato"]
+    assert result["excluded_ingredients"] == ["cheese"]
+
+    result = parse_query("I have chicken, no cheese, milk. I have potato.")
+    assert result["available_ingredients"] == ["chicken", "potato"]
+    assert result["excluded_ingredients"] == ["cheese", "milk"]
+
+    result = parse_query("I have chicken, no cheese, milk, under 500 calories")
+    assert result["excluded_ingredients"] == ["cheese", "milk"]
+    assert result["calorie_max"] == 500

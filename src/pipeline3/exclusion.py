@@ -211,7 +211,10 @@ class ExclusionFilter:
         recipe_ingredients: Iterable[str],
     ) -> ExclusionBreakdown:
         """Evaluate excluded ingredient violations for a single recipe."""
-        excluded_list = [e for e in excluded_ingredients if normalize_ingredient(e)]
+        excluded_list = [
+            e for e in excluded_ingredients
+            if isinstance(e, str) and normalize_ingredient(e)
+        ]
         if not excluded_list:
             return ExclusionBreakdown(
                 violated=False,
@@ -223,6 +226,8 @@ class ExclusionFilter:
         # Precompute normalized + canonicalized forms per recipe ingredient
         recipe_entries: list[tuple[str, set[str]]] = []
         for ing in recipe_ingredients:
+            if not isinstance(ing, str):
+                continue
             raw_norm = normalize_ingredient(ing)
             if not raw_norm:
                 continue

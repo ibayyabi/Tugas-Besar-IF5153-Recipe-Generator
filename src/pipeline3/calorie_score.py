@@ -1,7 +1,24 @@
 """Calorie compatibility scoring and hard-bound checking (PRD Section 22)."""
 from __future__ import annotations
 
+import math
+
 from .models import CalorieBreakdown
+
+
+def _finite(value: float | None) -> float | None:
+    if value is None:
+        return None
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return None
+    return result if math.isfinite(result) else None
+
+
+def _positive_or_none(value: float | None) -> float | None:
+    result = _finite(value)
+    return result if result is not None and result > 0 else None
 
 
 def evaluate_calorie_compatibility(
@@ -23,7 +40,14 @@ def evaluate_calorie_compatibility(
     - ``range``  : C_min <= C_r <= C_max (hard filter + proximity decay if relaxed)
     - ``target+bounds``: combined target proximity with explicit min/max hard bounds
     """
-    has_target = calorie_target is not None and calorie_target > 0
+    estimated_calories = _finite(estimated_calories)
+    calorie_target = _positive_or_none(calorie_target)
+    calorie_min = _positive_or_none(calorie_min)
+    calorie_max = _positive_or_none(calorie_max)
+    if calorie_min is not None and calorie_max is not None and calorie_min > calorie_max:
+        calorie_min, calorie_max = calorie_max, calorie_min
+
+    has_target = calorie_target is not None
     has_min = calorie_min is not None
     has_max = calorie_max is not None
 

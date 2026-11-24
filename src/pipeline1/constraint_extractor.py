@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import re
 
+from src.preprocessing.ingredient_normalizer import Vocabulary, singularize
+
 _CALORIE_UNIT = r"(?:calories?|kcal|cal)"
 # A bare number after "under/over/around" is only a calorie constraint when it
 # is not followed by an obvious time/volume/count unit ("under 20 minutes",
@@ -69,8 +71,16 @@ EXCLUSION_CUE = re.compile(
     r"|skip|skipping|no)\b"
 )
 CLAUSE_END = re.compile(r"[.,;!?]")
-CLAUSE_MARKS = ".,;!?"
+SENTENCE_MARKS = ".;!?"
 HYPHEN_MARKS = "-–—"
+_WORD = re.compile(r"[a-z0-9]+")
+_LIST_STOP_WORDS = frozenset(
+    {
+        "i", "we", "you", "he", "she", "they", "it", "there",
+        "but", "however", "then", "please", "just", "only", "also",
+        "for", "with", "without", "no", "not",
+    }
+)
 # "no cheese and I have potato": the availability clause starts here.
 TRANSITION_BREAK = re.compile(
     r"\b(?:but|however|then|and\s+(?=(?:(?:i|we|you)(?:ve)?|there)\s+"
@@ -85,19 +95,37 @@ def _is_digit(char: str) -> bool:
     return "0" <= char <= "9"
 
 
+def _starts_with_ingredient(text: str, pos: int, vocab: Vocabulary | None) -> bool:
+    """True when the text at ``pos`` begins with a vocabulary ingredient phrase."""
+    if vocab is None:
+        return False
+    first = _WORD.search(text, pos)
+    if first is None or text[pos : first.start()].strip():
+        return False
+    tokens = [match.group() for match in _WORD.finditer(text, first.start())][: vocab.max_tokens]
+    for size in range(min(vocab.max_tokens, len(tokens)), 0, -1):
+        window = tokens[:size]
+        window[-1] = singularize(window[-1])
+        if vocab.lookup(" ".join(window)):
+            return True
+    return False
+
+
 def normalize_query_text(text: str) -> tuple[str, str]:
     """Fold a query into ``(text, boundaries)`` for constraint extraction.
 
     ``text`` equals ``normalize_text`` for ordinary input, but keeps decimal
     points and numeric signs so ``20.5`` and ``-500`` are not split. Every
-    character in ``boundaries`` aligns with ``text``: ``|`` marks a clause
-    punctuation run, ``-`` marks a hyphen, and a space marks everything else.
+    character in ``boundaries`` aligns with ``text``: ``|`` marks sentence
+    punctuation, ``,`` marks a comma, ``-`` marks a hyphen, and a space marks
+    everything else.
     """
     lowered = text.lower().replace("\u2019", "'").replace("'", "")
     chars: list[str] = []
     marks: list[str] = []
     pending = False
-    pending_clause = False
+    pending_sentence = False
+    pending_comma = False
     pending_hyphen = False
     for index, char in enumerate(lowered):
         previous = lowered[index - 1] if index else ""
@@ -114,14 +142,23 @@ def normalize_query_text(text: str) -> tuple[str, str]:
         if allowed:
             if chars and pending:
                 chars.append(" ")
-                marks.append("|" if pending_clause else "-" if pending_hyphen else " ")
+                if pending_sentence:
+                    marks.append("|")
+                elif pending_comma:
+                    marks.append(",")
+                elif pending_hyphen:
+                    marks.append("-")
+                else:
+                    marks.append(" ")
             chars.append(char)
             marks.append(" ")
-            pending = pending_clause = pending_hyphen = False
+            pending = pending_sentence = pending_comma = pending_hyphen = False
         else:
             pending = True
-            if char in CLAUSE_MARKS:
-                pending_clause = True
+            if char in SENTENCE_MARKS:
+                pending_sentence = True
+            elif char == ",":
+                pending_comma = True
             elif char in HYPHEN_MARKS:
                 pending_hyphen = True
     return "".join(chars), "".join(marks)
@@ -132,11 +169,16 @@ def _number(raw: str) -> int | float | None:
     return value if value > 0 else None
 
 
-def extract_calorie_constraints(text: str) -> tuple[dict[str, int | float | None], list[tuple[int, int]]]:
+def extract_calorie_constraints(
+    text: str,
+    vocab: Vocabulary | None = None,
+) -> tuple[dict[str, int | float | None], list[tuple[int, int]]]:
     """Return the calorie fields and the character spans they occupy.
 
     Non-positive values (``0``, ``-500``) are consumed as spans but left unset:
-    they are not meaningful calorie constraints.
+    they are not meaningful calorie constraints. When ``vocab`` is supplied, a
+    number followed by a known ingredient ("under 2 potatoes") is a count, not
+    a calorie bound; a bare number at the end ("under 500") stays a bound.
     """
     fields: dict[str, int | float | None] = {
         "calorie_target": None,
@@ -149,8 +191,11 @@ def extract_calorie_constraints(text: str) -> tuple[dict[str, int | float | None
         return not any(match.start() < end and start < match.end() for start, end in taken)
 
     def is_non_calorie(match: re.Match) -> bool:
-        """True for "under 20 minutes" / "no more than 3 eggs" style bounds."""
-        return _NON_CALORIE_AFTER.match(text, match.end()) is not None
+        """True for "under 20 minutes" / "under 2 potatoes" style phrases."""
+        return (
+            _NON_CALORIE_AFTER.match(text, match.end()) is not None
+            or _starts_with_ingredient(text, match.end(), vocab)
+        )
 
     for pattern in (CALORIE_RANGE, CALORIE_RANGE_TO):
         for match in pattern.finditer(text):
@@ -183,12 +228,54 @@ def extract_calorie_constraints(text: str) -> tuple[dict[str, int | float | None
     return fields, taken
 
 
-def exclusion_spans(masked_text: str, boundaries: str | None = None) -> list[tuple[int, int]]:
+def _next_boundary(boundaries: str, start: int) -> int:
+    positions = [
+        position
+        for position in (boundaries.find("|", start), boundaries.find(",", start))
+        if position != -1
+    ]
+    return min(positions) if positions else -1
+
+
+def _comma_list_end(
+    text: str,
+    boundaries: str,
+    start: int,
+    vocab: Vocabulary | None,
+) -> int:
+    """Extend an exclusion span across comma-separated ingredient items.
+
+    ``no cheese, milk`` keeps both; ``no cheese, I have potato`` stops at the
+    comma because the next segment starts with a pronoun, not an ingredient.
+    """
+    end = start
+    while end < len(text) and boundaries[end] == ",":
+        following = _next_boundary(boundaries, end + 1)
+        segment_end = following if following != -1 else len(text)
+        words = text[end + 1 : segment_end].split()
+        if words and words[0] in {"and", "or"}:
+            words = words[1:]
+        if not words or words[0] in _LIST_STOP_WORDS:
+            break
+        if not _starts_with_ingredient(" ".join(words), 0, vocab):
+            break
+        end = segment_end
+        if following == -1 or boundaries[following] == "|":
+            break
+    return end
+
+
+def exclusion_spans(
+    masked_text: str,
+    boundaries: str | None = None,
+    vocab: Vocabulary | None = None,
+) -> list[tuple[int, int]]:
     """Character spans that follow an exclusion cue, up to the next clause.
 
     ``no milk or butter`` yields one span containing ``milk or butter``;
-    ``no butter and no cream`` yields two; ``no cheese, I have potato`` stops at
-    the comma. ``boundaries`` is the parallel string from
+    ``no butter and no cream`` yields two; ``no cheese, milk`` keeps both;
+    ``no cheese, I have potato`` stops at the comma because the next segment is
+    an availability clause. ``boundaries`` is the parallel string from
     :func:`normalize_query_text`; without it the legacy period/comma scan runs.
     """
     cues = list(EXCLUSION_CUE.finditer(masked_text))
@@ -208,9 +295,11 @@ def exclusion_spans(masked_text: str, boundaries: str | None = None) -> list[tup
 
         end = len(masked_text)
         if boundaries is not None:
-            clause = boundaries.find("|", cue.end())
-            if clause != -1:
-                end = clause
+            boundary = _next_boundary(boundaries, cue.end())
+            if boundary != -1:
+                end = boundary
+                if boundaries[boundary] == ",":
+                    end = _comma_list_end(masked_text, boundaries, boundary, vocab)
         else:
             clause = CLAUSE_END.search(masked_text, cue.end())
             if clause:
@@ -227,7 +316,7 @@ def exclusion_spans(masked_text: str, boundaries: str | None = None) -> list[tup
         # "cheese-free" / "sugar free": exclude the token before "free".
         for match in FREE_SUFFIX.finditer(masked_text):
             separator = match.start() - 1
-            if separator < 0 or boundaries[separator] == "|":
+            if separator < 0 or boundaries[separator] in "|,":
                 continue
             if masked_text[match.end() :].lstrip().startswith("range"):
                 continue

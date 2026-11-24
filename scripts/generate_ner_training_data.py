@@ -163,10 +163,10 @@ def generate_one(names: list[str], excluded_pool: list[str], rng: random.Random,
 
     # Production masking, verbatim from query_parser.constrain_query.
     text, boundaries = normalize_query_text(query)
-    _, calorie_spans = extract_calorie_constraints(text)
+    _, calorie_spans = extract_calorie_constraints(text, vocab)
     masked = _blank(text, calorie_spans)
     masked_boundaries = _blank(boundaries, calorie_spans)
-    spans = exclusion_spans(masked, masked_boundaries)
+    spans = exclusion_spans(masked, masked_boundaries, vocab)
     available_context = _blank(masked, spans)
 
     clause_text = normalize_query_text(clause)[0]

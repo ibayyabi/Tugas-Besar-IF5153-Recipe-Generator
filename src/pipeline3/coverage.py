@@ -123,6 +123,7 @@ def compute_coverage(
             missing_staples=[],
             recipe_ingredients=[],
             ingredient_weights={},
+            parse_confidence=0.0,
         )
 
     available_matched = [ing for ing in recipe_list if ing in user_set]
@@ -149,6 +150,7 @@ def compute_coverage(
     missing_staples = [ing for ing in missing_ingredients if weights_map[ing] < staple_threshold]
 
     coverage_score = weighted_coverage if use_weights else unweighted_coverage
+    parse_confidence = 1.0
     missing_penalty = (
         weighted_missing_penalty
         if (use_weights and use_weighted_missing_penalty)
@@ -168,4 +170,5 @@ def compute_coverage(
         missing_staples=missing_staples,
         recipe_ingredients=recipe_list,
         ingredient_weights=weights_map,
+        parse_confidence=parse_confidence,
     )

@@ -22,6 +22,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.pipeline2.vectorizer import corpus_signature
+
 DEFAULT_CORPUS = REPO_ROOT / "data" / "processed" / "recipes.parquet"
 DEFAULT_OUT_DIR = REPO_ROOT / "artifacts"
 
@@ -51,9 +53,14 @@ def encode_corpus(corpus_path: Path, model_name: str, out_dir: Path, batch_size:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     np.save(out_dir / "dense_vectors.npy", vectors)
+    try:
+        stored_corpus_path = corpus_path.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        stored_corpus_path = str(corpus_path.resolve())
     meta = {
         "model": model_name,
-        "corpus_path": str(corpus_path),
+        "corpus_path": stored_corpus_path,
+        "corpus_signature": corpus_signature(corpus),
         "column": "canonical_text",
         "normalized": True,
         "dim": int(vectors.shape[1]),

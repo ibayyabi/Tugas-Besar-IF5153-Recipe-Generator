@@ -47,11 +47,35 @@ def normalize_text(text: str) -> str:
     return text.strip()
 
 
+# Plurals whose singular keeps the "-ie" ("cookies" -> "cookie", not "cooky").
+# Closed-vocabulary compensation for missing WordNet-style lemmatization; add a
+# stem here when the alias table grows one of these nouns.
+_IE_STEMS = frozenset(
+    {
+        "brownie",
+        "calorie",
+        "cookie",
+        "freebie",
+        "hoagie",
+        "movie",
+        "pie",
+        "rookie",
+        "selfie",
+        "smoothie",
+        "tie",
+        "veggie",
+        "zombie",
+    }
+)
+
+
 def singularize(word: str) -> str:
     # suffix rules, not WordNet lemmatization; the closed vocabulary and
     # alias table hide the gap. Swap in NLTK when the vocabulary goes open-domain.
     if len(word) < 4 or word.endswith(("ss", "us", "is")):
         return word
+    if word.endswith("ies") and word[:-1] in _IE_STEMS:
+        return word[:-1]
     if word.endswith("ies"):
         return word[:-3] + "y"
     if word.endswith("oes"):

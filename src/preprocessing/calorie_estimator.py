@@ -1,7 +1,7 @@
 """Recipe calorie estimator (PRD Sections 14-16) — the single one in the repo.
 
-Merges the former ``CalorieMapper`` (dict API used by corpus preprocessing)
-and ``RecipeCalorieEstimator`` (typed API used by Pipeline 3, evaluation, UI)
+Merges the former ``CalorieMapper`` (dict API) and
+``RecipeCalorieEstimator`` (typed API used by Pipeline 3, evaluation, UI)
 into one engine over the committed tables in ``data/processed/``:
 
 - ``calorie_baseline.csv``         (deterministic canonical kcal/100g + fdc_id)
@@ -28,7 +28,9 @@ from src.preprocessing.ingredient_normalizer import (
     DEFAULT_PROCESSED_DIR,
     IngredientNormalizer,
     normalize_ingredient,
+    normalize_text,
     read_csv_rows,
+    singularize,
 )
 from src.preprocessing.ingredient_parser import parse_ingredient
 
@@ -108,6 +110,33 @@ class CalorieEstimate:
         return self.matched_count / self.total_count if self.total_count else 0.0
 
 
+def aligned_hint(raw_line: str, hint: object) -> str | None:
+    """Return ``hint`` only when it literally occurs in ``raw_line``.
+
+    RecipeNLG's NER list drifts out of positional alignment with the raw
+    ingredient lines (1997/10000 sample rows differ in length), so an
+    index-matched hint can describe a different ingredient: raw
+    ``KRAFT Macaroni & Cheese Dinner`` at index 0 against NER
+    ``rotisserie chicken``. Trust the hint only when its normalized tokens
+    form a contiguous token subsequence (whole phrase included) of the
+    normalized line; otherwise ignore it.
+    """
+    if not isinstance(hint, str) or not hint.strip():
+        return None
+    # Compare token-wise with every token singularized, so plural hints mid-line
+    # ("potatoes" vs "potato") still align. Whole-phrase equality is the
+    # width-equals-line case of the same subsequence check.
+    hint_tokens = [singularize(t) for t in normalize_text(hint).split()]
+    line_tokens = [singularize(t) for t in normalize_text(raw_line).split()]
+    if not hint_tokens or not line_tokens:
+        return None
+    width = len(hint_tokens)
+    for start in range(len(line_tokens) - width + 1):
+        if line_tokens[start : start + width] == hint_tokens:
+            return hint
+    return None
+
+
 def extract_servings(directions: Iterable[str], title: str = "") -> int | None:
     """Extract stated serving count from recipe directions/title when present."""
     combined = " ".join([title, *directions])
@@ -128,8 +157,8 @@ class RecipeCalorieEstimator:
     Exposes both historical entry points:
 
     - typed:  :meth:`estimate_recipe` -> ``CalorieEstimate`` (Pipeline 3, UI, evaluation)
-    - dict:   :meth:`estimate_recipe_calories` / :meth:`estimate_ingredient_calories`
-      (corpus preprocessing)
+    - dict:  :meth:`estimate_recipe_calories` / :meth:`estimate_ingredient_calories`
+      (legacy raw-line helpers kept for evaluation scripts)
     """
 
     def __init__(
@@ -229,7 +258,8 @@ class RecipeCalorieEstimator:
 
         Candidate keys: alias-mapped full form, raw normalized form, then
         qualifier-dropped suffixes (each alias-mapped too). Tables are consulted
-        in priority order zero -> baseline -> reference -> supplement, then a
+        in priority order zero -> baseline -> supplement -> reference, then the
+        longest known contiguous n-gram of the name (up to 3 tokens), then a
         fuzzy match across all three kcal tables.
         """
         norm = normalize_ingredient(ingredient)
@@ -270,6 +300,31 @@ class RecipeCalorieEstimator:
                         "fdc_id": fdc_id,
                         "match_type": match_type,
                     }
+
+        # Conservative substring fallback: contiguous token n-grams of the
+        # normalized name (up to 3 tokens, longest first) that exist in a known
+        # table, e.g. "kraft macaroni cheese dinner" -> "macaroni". Only table
+        # keys are consulted, so this is deterministic and never scans
+        # unrelated words. Curated tables win over the generic USDA reference
+        # at each width, so a brand token ("kraft") cannot outrank a real food.
+        for width in range(min(3, len(tokens)), 0, -1):
+            grams = [" ".join(tokens[s : s + width]) for s in range(len(tokens) - width + 1)]
+            for table, match_type in (
+                (self.zero_calorie, "zero"),
+                (self.baseline, "baseline"),
+                (self.supplement, "supplement"),
+                (self.reference, "reference"),
+            ):
+                for gram in grams:
+                    for cand in (aliases.get(gram, gram), gram):
+                        if cand in table:
+                            kcal, fdc_id = (0.0, None) if match_type == "zero" else table[cand]
+                            return {
+                                "canonical": cand,
+                                "kcal_per_100g": kcal,
+                                "fdc_id": fdc_id,
+                                "match_type": match_type,
+                            }
 
         if self.enable_fuzzy and self._fuzzy_keys:
             mapped = aliases.get(norm, norm)
@@ -337,8 +392,13 @@ class RecipeCalorieEstimator:
             "ingredient": parsed["ingredient"],
         }
         lookup = self.lookup_calorie_per_100g(str(parsed["ingredient"] or ""))
-        if lookup is None and ner_hint:
-            lookup = self.lookup_calorie_per_100g(str(ner_hint))
+        if lookup is None:
+            # Only trust an index-matched NER hint when it actually describes
+            # this raw line (see aligned_hint); positional drift otherwise
+            # misprices e.g. a macaroni line as "rotisserie chicken".
+            hint = aligned_hint(raw_ingredient, ner_hint)
+            if hint:
+                lookup = self.lookup_calorie_per_100g(hint)
         if lookup is None:
             return {
                 **base,
@@ -420,14 +480,19 @@ class RecipeCalorieEstimator:
         default_servings: int = 4,
     ) -> CalorieEstimate:
         """Estimate total and per-serving calories for a recipe (typed API, PRD Section 16)."""
-        raw_list = [r for r in raw_ingredients if isinstance(r, str) and r.strip()]
+        raw_source = list(raw_ingredients)
+        raw_list = [r for r in raw_source if isinstance(r, str) and r.strip()]
         ner_list = list(ner_ingredients) if ner_ingredients is not None else []
 
         items: list[IngredientCalorieItem] = []
         total_kcal = 0.0
         matched_count = 0
 
-        for idx, raw_line in enumerate(raw_list):
+        # Iterate the *unfiltered* list so NER hints stay paired with their
+        # original raw line; dropping bad entries first would shift indices.
+        for idx, raw_line in enumerate(raw_source):
+            if not isinstance(raw_line, str) or not raw_line.strip():
+                continue
             parsed = parse_ingredient(raw_line)
             quantity = parsed["quantity"]
             unit = parsed["unit"]
@@ -435,8 +500,12 @@ class RecipeCalorieEstimator:
             hint = ner_list[idx] if idx < len(ner_list) else None
 
             lookup = self.lookup_calorie_per_100g(name)
-            if lookup is None and hint:
-                lookup = self.lookup_calorie_per_100g(str(hint))
+            if lookup is None:
+                # Same alignment guard as the dict API: an index-matched NER
+                # term from a drifted list must not price this raw line.
+                hint = aligned_hint(raw_line, hint)
+                if hint:
+                    lookup = self.lookup_calorie_per_100g(hint)
 
             if lookup is None:
                 items.append(

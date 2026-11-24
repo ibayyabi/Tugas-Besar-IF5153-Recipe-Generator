@@ -69,21 +69,41 @@ def _submit_query(query: str, settings: dict, exec_fn, history: list) -> None:
         st.markdown(query)
 
     with st.chat_message("assistant"):
-        run = exec_fn(query, settings)
-        _render_assistant_message(
-            {"role": "assistant", "content": _summary(run), "run": run},
-            index=len(history),  # the message being appended below
-            fresh=True,
-        )
-    st.session_state.messages.append(
-        {"role": "assistant", "content": _summary(run), "run": run}
-    )
+        try:
+            run = exec_fn(query, settings)
+        except Exception as error:  # surface the failure as an assistant reply, never a traceback
+            st.error(f"{type(error).__name__}: {error}")
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": f"Maaf, pipeline gagal dijalankan ({type(error).__name__}): {error}",
+                }
+            )
+        else:
+            _render_assistant_message(
+                {"role": "assistant", "content": _summary(run), "run": run},
+                index=len(history),  # the message being appended below
+                fresh=True,
+            )
+            st.session_state.messages.append(
+                {"role": "assistant", "content": _summary(run), "run": run}
+            )
+    # Keep the thread bounded: each run carries a 50-candidate trace.
+    if len(history) > 100:
+        del history[: len(history) - 100]
     st.rerun()
 
 
 def _summary(run: dict) -> str:
     """Deterministic reply text built from the run's actual numbers."""
     recommendation = run["recommendation"]
+    if not recommendation.recommendations:
+        reason = getattr(recommendation, "no_match_reason", None)
+        summary = (
+            f"Tidak ada resep yang cocok dari {recommendation.total_candidates} kandidat "
+            "(semua tersaring atau kandidat kosong)."
+        )
+        return summary + (f"\n\n{reason}" if reason else "")
     query = run["p1_trace"].structured_query
     excluded = ", ".join(query["excluded_ingredients"]) or "—"
     calorie = query.get("calorie_target") or query.get("calorie_max") or query.get("calorie_min")
@@ -125,7 +145,7 @@ def _render_recipe_cards(recommendation) -> None:
             cols[0].metric("Match", f"{ranked.overall_match_pct}%", f"score {ranked.final_score:.3f}")
             cols[1].metric("Coverage", f"{cov.coverage_score:.0%}", f"{len(cov.available_matched)}/{len(cov.recipe_ingredients)}")
             cols[2].metric(
-                "Est. kalori",
+                "Est. kalori/porsi",
                 f"{round(cal.estimated_calories)} kcal" if cal.estimated_calories is not None else "N/A",
                 cal.status_label if cal.estimated_calories is not None else "not estimated",
             )

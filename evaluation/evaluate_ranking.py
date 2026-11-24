@@ -42,6 +42,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.pipeline3 import (
+    CalorieEstimate,
     CandidateRecipe,
     IngredientNormalizer,
     MultiCriteriaReranker,
@@ -112,7 +113,7 @@ class LocalTfidfRetriever:
         self,
         query: StructuredQuery,
         estimator: RecipeCalorieEstimator,
-        calorie_cache: dict[int, float | None],
+        calorie_cache: dict[int, CalorieEstimate],
         top_n: int = 50,
         calorie_mode: str = "per_serving",
     ) -> list[CandidateRecipe]:
@@ -136,16 +137,15 @@ class LocalTfidfRetriever:
             if sim_score <= 0.0:
                 continue
             row = self.recipes[int(pos)]
-            if row.recipe_id not in calorie_cache:
+            est = calorie_cache.get(row.recipe_id)
+            if est is None:
                 est = estimator.estimate_recipe(
                     row.raw_ingredients,
                     row.ner_ingredients,
                     row.directions,
                     title=row.title,
                 )
-                calorie_cache[row.recipe_id] = (
-                    est.calories_per_serving if calorie_mode == "per_serving" else est.total_calories
-                )
+                calorie_cache[row.recipe_id] = est
             candidates.append(
                 CandidateRecipe(
                     recipe_id=row.recipe_id,
@@ -154,7 +154,10 @@ class LocalTfidfRetriever:
                     tfidf_score=sim_score,
                     ingredients=row.raw_ingredients,
                     directions=row.directions,
-                    total_calories=calorie_cache[row.recipe_id],
+                    total_calories=est.total_calories,
+                    # Pipeline 3 ranks on per-serving calories by default; --calorie-mode total
+                    # hides this field so the reranker falls back to total_calories.
+                    calories_per_serving=est.calories_per_serving if calorie_mode == "per_serving" else None,
                 )
             )
         return candidates
@@ -331,7 +334,7 @@ def main() -> None:
     print(f"[info] Indexed {len(retriever.recipes):,} recipes with TF-IDF ({time.perf_counter() - t0:.2f}s)")
 
     raw_queries = json.loads(args.queries.read_text(encoding="utf-8"))["queries"]
-    calorie_cache: dict[int, float | None] = {}
+    calorie_cache: dict[int, CalorieEstimate] = {}
     query_candidates: list[tuple[str, StructuredQuery, list[CandidateRecipe]]] = []
 
     t_ret = time.perf_counter()
@@ -346,7 +349,9 @@ def main() -> None:
         )
         query_candidates.append((entry["id"], sq, cands))
 
-    estimated_non_null = sum(1 for v in calorie_cache.values() if v is not None)
+    estimated_non_null = sum(
+        1 for v in calorie_cache.values() if v.total_calories is not None
+    )
     print(
         f"[info] Retrieved Top-{args.candidate_n} candidates for {len(query_candidates)} queries; "
         f"estimated calories for {estimated_non_null}/{len(calorie_cache)} unique candidate recipes "

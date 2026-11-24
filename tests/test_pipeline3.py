@@ -190,6 +190,25 @@ class TestCalorieCompatibility(unittest.TestCase):
         unk_hard = evaluate_calorie_compatibility(None, calorie_max=500)
         self.assertFalse(unk_hard.passed_hard_filter)
 
+    def test_bounds_sanitize_nan_swap_and_non_positive(self) -> None:
+        # min > max is swapped rather than producing an empty range
+        swapped = evaluate_calorie_compatibility(500, calorie_min=600, calorie_max=400)
+        self.assertEqual(swapped.constraint_type, "range")
+        self.assertTrue(swapped.passed_hard_filter)
+        self.assertEqual(swapped.score, 1.0)
+
+        # <= 0 bounds are treated as absent
+        zero_bounds = evaluate_calorie_compatibility(500, calorie_min=0, calorie_max=-5)
+        self.assertEqual(zero_bounds.constraint_type, "none")
+
+        # NaN calories behave like unknown calories
+        nan_cal = evaluate_calorie_compatibility(float("nan"), calorie_max=500)
+        self.assertIsNone(nan_cal.estimated_calories)
+        self.assertFalse(nan_cal.passed_hard_filter)
+
+        nan_target = evaluate_calorie_compatibility(500, calorie_target=float("nan"))
+        self.assertEqual(nan_target.constraint_type, "none")
+
 
 class TestExclusionFilter(unittest.TestCase):
     @classmethod
@@ -219,6 +238,15 @@ class TestExclusionFilter(unittest.TestCase):
 
         self.assertTrue(self.ef.check(["cream"], ["pasta", "heavy cream"]).violated)
         self.assertFalse(self.ef.check(["cream"], ["egg white", "cream of tartar"]).violated)
+
+    def test_title_and_raw_mentions_are_checked(self) -> None:
+        # A cheese mention in the title alone must violate "no cheese"
+        self.assertTrue(self.ef.check(["cheese"], ["Mac & Cheese"]).violated)
+        # Raw ingredient lines (not yet canonicalized) must also count
+        self.assertTrue(self.ef.check(["cheese"], ["1 cup shredded cheddar cheese"]).violated)
+        # Non-string entries are skipped, never crash
+        self.assertFalse(self.ef.check(["cheese"], [None, 42, ""]).violated)
+        self.assertFalse(self.ef.check([None, 3], ["chicken", "rice"]).violated)
 
 
 class TestMultiCriteriaReranker(unittest.TestCase):
@@ -301,7 +329,7 @@ class TestMultiCriteriaReranker(unittest.TestCase):
         returned_ids = [r.recipe.recipe_id for r in proposed_res.recommendations]
         self.assertNotIn(1, returned_ids)
 
-    def test_risk6_fallback_relaxes_calorie_first_then_exclusion(self) -> None:
+    def test_risk6_fallback_relaxes_calories_but_never_exclusions(self) -> None:
         query = StructuredQuery(
             available_ingredients=["chicken", "rice"],
             excluded_ingredients=["cheese"],
@@ -334,11 +362,11 @@ class TestMultiCriteriaReranker(unittest.TestCase):
         self.assertEqual(res.recommendations[0].recipe.recipe_id, "cal_over")
         self.assertTrue(res.recommendations[0].is_fallback_candidate)
 
-        # Tier 2: if ALL candidates violate exclusions, still returns closest alternative with explicit warning
+        # Exclusions are hard: if every candidate violates one, return no result.
         res_tier2 = self.reranker.rerank([candidates[1]], query, top_k=1)
-        self.assertTrue(res_tier2.is_fallback)
-        self.assertIn("excluded_ingredients", res_tier2.relaxed_constraints)
-        self.assertEqual(res_tier2.recommendations[0].recipe.recipe_id, "has_cheese")
+        self.assertFalse(res_tier2.is_fallback)
+        self.assertEqual(res_tier2.recommendations, [])
+        self.assertIn("excluded", (res_tier2.no_match_reason or "").lower())
 
     def test_explainable_formatting_and_serialization(self) -> None:
         query = StructuredQuery(
@@ -471,6 +499,223 @@ class TestMultiCriteriaReranker(unittest.TestCase):
         self.assertEqual(scored_total.calorie.score, 0.0)
         self.assertEqual(scored_serving.calorie.estimated_calories, 500.0)
         self.assertEqual(scored_serving.calorie.score, 1.0)
+
+    def test_typed_and_dict_inputs_sanitize_nan_and_none(self) -> None:
+        cand = CandidateRecipe(
+            recipe_id=7,
+            title=None,  # type: ignore[arg-type]
+            canonical_ingredients=[None, "chicken", "", 3],  # type: ignore[list-item]
+            tfidf_score=float("nan"),
+            ingredients=None,  # type: ignore[arg-type]
+            directions=None,  # type: ignore[arg-type]
+            total_calories=float("nan"),
+            calories_per_serving=float("nan"),
+        )
+        self.assertEqual(cand.title, "")
+        self.assertEqual(cand.canonical_ingredients, ["chicken"])
+        self.assertEqual(cand.ingredients, [])
+        self.assertEqual(cand.directions, [])
+        self.assertEqual(cand.tfidf_score, 0.0)
+        self.assertIsNone(cand.total_calories)
+        self.assertIsNone(cand.calories_per_serving)
+
+        parsed = CandidateRecipe.from_dict(
+            {
+                "recipe_id": 8,
+                "title": "Soup",
+                "canonical_ingredients": None,
+                "ingredients": None,
+                "directions": None,
+                "tfidf_score": None,
+                "total_calories": float("nan"),
+                "calories_per_serving": float("inf"),
+            }
+        )
+        self.assertEqual(parsed.canonical_ingredients, [])
+        self.assertEqual(parsed.ingredients, [])
+        self.assertEqual(parsed.directions, [])
+        self.assertEqual(parsed.tfidf_score, 0.0)
+        self.assertIsNone(parsed.total_calories)
+        self.assertIsNone(parsed.calories_per_serving)
+
+        sq = StructuredQuery(
+            available_ingredients=None,
+            excluded_ingredients=None,
+            calorie_min=float("nan"),
+            calorie_max=-5,
+        )
+        self.assertEqual(sq.available_ingredients, ())
+        self.assertEqual(sq.excluded_ingredients, ())
+        self.assertIsNone(sq.calorie_min)
+        self.assertIsNone(sq.calorie_max)
+
+        sq_swap = StructuredQuery.from_dict(
+            {
+                "available_ingredients": [None, "chicken", "", 7],
+                "excluded_ingredients": ["cheese"],
+                "calorie_min": 600,
+                "calorie_max": 400,
+            }
+        )
+        self.assertEqual(sq_swap.available_ingredients, ("chicken",))
+        self.assertEqual((sq_swap.calorie_min, sq_swap.calorie_max), (400.0, 600.0))
+
+        with self.assertRaises(TypeError):
+            StructuredQuery.from_dict(None)  # type: ignore[arg-type]
+
+    def test_no_match_result_and_reason(self) -> None:
+        query = StructuredQuery(available_ingredients=["chicken"], calorie_max=300)
+
+        empty = self.reranker.rerank([], query, top_k=3)
+        self.assertEqual(empty.recommendations, [])
+        self.assertIsNotNone(empty.no_match_reason)
+        self.assertIn("no_match_reason", to_dict(empty))
+
+        hot = CandidateRecipe(
+            recipe_id="hot",
+            title="Hot Bowl",
+            canonical_ingredients=["chicken", "rice", "oil"],
+            tfidf_score=0.8,
+            total_calories=900.0,
+        )
+        no_fallback = RankingConfig(enable_fallback=False)
+        res = self.reranker.rerank([None, hot], query, top_k=1, config=no_fallback)  # type: ignore[list-item]
+        self.assertEqual(res.recommendations, [])
+        self.assertEqual(res.filtered_out_calorie, 1)
+        self.assertIn("fallback is disabled", res.no_match_reason or "")
+
+    def test_duplicate_titles_are_deduped_and_prefer_best(self) -> None:
+        query = StructuredQuery(available_ingredients=["chicken", "rice", "oil"])
+        candidates = [
+            CandidateRecipe(
+                recipe_id=1,
+                title="Chicken Rice",
+                canonical_ingredients=["chicken", "rice", "oil"],
+                tfidf_score=0.50,
+                total_calories=500.0,
+            ),
+            CandidateRecipe(
+                recipe_id=2,
+                title="  chicken   rice ",
+                canonical_ingredients=["chicken", "rice", "oil"],
+                tfidf_score=0.90,
+                total_calories=500.0,
+            ),
+        ]
+        res = self.reranker.rerank(candidates, query, top_k=3)
+        self.assertEqual(len(res.recommendations), 1)
+        # Best-scoring duplicate survives, not the first inserted
+        self.assertEqual(res.recommendations[0].recipe.recipe_id, 2)
+
+    def test_title_and_raw_cheese_mentions_are_filtered(self) -> None:
+        query = StructuredQuery(
+            available_ingredients=["pasta", "milk"],
+            excluded_ingredients=["cheese"],
+        )
+        mac = CandidateRecipe(
+            recipe_id="mac",
+            title="Mac & Cheese",
+            canonical_ingredients=["pasta", "milk"],
+            ingredients=["1 box macaroni", "2 cups milk"],
+            tfidf_score=0.8,
+            total_calories=600.0,
+        )
+        raw_only = CandidateRecipe(
+            recipe_id="raw",
+            title="Baked Pasta",
+            canonical_ingredients=["pasta", "milk"],
+            ingredients=["1 box pasta", "1 cup shredded cheddar cheese"],
+            tfidf_score=0.7,
+            total_calories=600.0,
+        )
+        res = self.reranker.rerank(
+            [mac, raw_only], query, top_k=2, config=RankingConfig(enable_fallback=False)
+        )
+        self.assertEqual(res.filtered_out_exclusion, 2)
+        self.assertEqual(res.recommendations, [])
+        self.assertIsNotNone(res.no_match_reason)
+
+    def test_per_serving_calories_preferred_over_total(self) -> None:
+        query = StructuredQuery(
+            available_ingredients=["chicken", "rice", "oil"],
+            calorie_target=500,
+        )
+        cand = CandidateRecipe(
+            recipe_id="per",
+            title="Family Roast Chicken",
+            canonical_ingredients=["chicken", "rice", "oil"],
+            tfidf_score=0.8,
+            total_calories=2000.0,
+            calories_per_serving=500.0,
+            directions=["Serves 4."],
+        )
+        # Per-serving wins even when direction-based normalization is enabled
+        scored = self.reranker.score_candidate(
+            cand, query, config=RankingConfig(normalize_servings_from_directions=True)
+        )
+        self.assertEqual(scored.calorie.estimated_calories, 500.0)
+        self.assertEqual(scored.calorie.score, 1.0)
+
+    def test_parse_confidence_scales_coverage_for_short_parses(self) -> None:
+        cand = CandidateRecipe(
+            recipe_id="short",
+            title="Chicken And Salt",
+            canonical_ingredients=["chicken", "salt"],
+            ingredients=["1 chicken", "1 tsp salt", "1 cup water"],
+            tfidf_score=0.5,
+            total_calories=400.0,
+        )
+        scored = self.reranker.score_candidate(
+            cand,
+            StructuredQuery(["chicken"]),
+            config=RankingConfig(use_pantry_staple_weights=False),
+        )
+        self.assertAlmostEqual(scored.coverage.parse_confidence, 2 / 3, places=4)
+        self.assertAlmostEqual(scored.coverage.coverage_score, 0.5 * (2 / 3), places=4)
+        # Penalty itself is not reduced by parse confidence
+        self.assertAlmostEqual(scored.coverage.missing_penalty, 0.5, places=4)
+
+        full = compute_coverage(
+            ["chicken"],
+            ["chicken", "salt", "rice"],
+            staple_weights=self.reranker.staple_weights,
+            normalizer=self.reranker.normalizer,
+        )
+        self.assertEqual(full.parse_confidence, 1.0)
+
+    def test_fallback_calorie_ordering_prefers_nearest_distance(self) -> None:
+        query = StructuredQuery(
+            available_ingredients=["chicken", "rice", "oil"],
+            calorie_max=300,
+        )
+        far = CandidateRecipe(
+            recipe_id="far",
+            title="Loaded Feast",
+            canonical_ingredients=["chicken", "rice", "oil"],
+            tfidf_score=0.95,
+            total_calories=5452.0,
+        )
+        near = CandidateRecipe(
+            recipe_id="near",
+            title="Chicken Rice Bowl",
+            canonical_ingredients=["chicken", "rice", "oil"],
+            tfidf_score=0.70,
+            total_calories=481.0,
+        )
+        res = self.reranker.rerank([far, near], query, top_k=1)
+        self.assertTrue(res.is_fallback)
+        self.assertEqual(res.recommendations[0].recipe.recipe_id, "near")
+        self.assertTrue(res.recommendations[0].is_fallback_candidate)
+        self.assertIn("calorie_bounds", res.relaxed_constraints)
+
+    def test_ranking_config_rejects_invalid_weights(self) -> None:
+        with self.assertRaises(ValueError):
+            RankingConfig(alpha=float("nan"))
+        with self.assertRaises(ValueError):
+            RankingConfig(beta=-0.1)
+        with self.assertRaises(ValueError):
+            RankingConfig(delta=float("inf"))
+        self.assertEqual(RankingConfig().alpha, 0.30)
 
 
 class TestCalorieEstimator(unittest.TestCase):

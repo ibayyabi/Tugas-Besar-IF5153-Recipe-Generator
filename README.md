@@ -49,10 +49,12 @@ Constraint patterns: `under/below/max/maximum/less than/up to/no more than/at mo
 `at least/minimum/min/over/more than/above`, `around/about/approximately/roughly/nearly`,
 `between A and B` and `A to B`, plus unit-bearing suffix forms (`500 calories max/or less`).
 Numbers followed by a time/volume/count unit (`under 20 minutes`, `over 2 cups`, `no more than 3 eggs`)
-are not calorie constraints. Exclusions follow
+are not calorie constraints. A unitless number followed by a known ingredient is also a count
+(`under 2 potatoes`); a bare trailing number (`under 500`) remains a calorie shorthand. Exclusions follow
 `no/without/exclude/avoid/don't want/can't eat/allergic to/except/skip` and
-`X-free` / `X free`; an exclusion clause stops at punctuation or an availability
-transition (`... but I have ...`).
+`X-free` / `X free`; comma-separated ingredient lists continue the clause (`no cheese, milk`),
+while `no cheese, I have potato` stops at the comma. An exclusion clause also stops at an
+availability transition (`... but I have ...`).
 A bare number (`450 kcal`) is deliberately not a constraint.
 
 ## Pipelines
@@ -75,9 +77,31 @@ the swapped component.
 | 1 | `surface-exact` | ablation |
 | 1 | `difflib-0.82`, `char-ngram-0.60` | fuzzy fallbacks |
 | 1 | `ner` | fine-tuned DistilBERT token classification (local, no LLM API) |
-| 2 | `tfidf` | production baseline (max_features=1000, staple down-weighting) |
+| 2 | `tfidf` | production baseline (full vocabulary, unigram, sublinear TF, staple down-weighting) |
 | 2 | `dense` | sentence-transformer `all-MiniLM-L6-v2` embeddings |
 | 3 | weighted α/β/γ/δ + ablation models A–D | PRD §24/§35 |
+
+## Calories, exclusions, and no-match behavior
+
+The processed corpus (`data/processed/recipes.parquet`) carries calorie columns from the
+estimator: `total_calories` (whole recipe), `calories_per_serving`, `estimated_servings`,
+and `servings_source` (`parsed`, `heuristic`, or `single`). Pipeline 3 ranks on
+**per-serving calories** by default; the evaluator's `--calorie-mode total` falls back to
+whole-recipe calories.
+
+```bash
+python scripts/build_calorie_reference.py     # USDA + supplement tables
+python scripts/build_calorie_baseline.py
+python -m src.preprocessing.build_corpus      # rebuild parquet with the calorie columns
+```
+
+Exclusions are checked against the recipe **title**, raw ingredient lines, and canonical
+(normalized) ingredients, so "no cheese" also excludes *Mac & Cheese*.
+
+When retrieval finds no candidates (empty query vector) or no candidate survives the
+constraints, Pipeline 2 returns an empty list and Pipeline 3 returns no recommendations
+plus a `no_match_reason`; the dashboard and chat show that reason instead of an empty
+Top-0 table.
 
 ## Build offline artifacts
 

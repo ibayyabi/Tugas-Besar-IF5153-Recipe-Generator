@@ -59,16 +59,16 @@ class ConstrainedQuery:
     exclusion_context: str  # only the exclusion clause text
 
 
-def constrain_query(query: str) -> ConstrainedQuery:
+def constrain_query(query: str, vocab: Vocabulary | None = None) -> ConstrainedQuery:
     """Normalize a query and split it into masked contexts for ingredient matching."""
     if not isinstance(query, str):
         raise TypeError(f"query must be a string, got {type(query).__name__}")
     text, boundaries = normalize_query_text(query)
-    calories, calorie_spans = extract_calorie_constraints(text)
+    calories, calorie_spans = extract_calorie_constraints(text, vocab)
     masked = _blank(text, calorie_spans)
     masked_boundaries = _blank(boundaries, calorie_spans)
 
-    spans = exclusion_spans(masked, masked_boundaries)
+    spans = exclusion_spans(masked, masked_boundaries, vocab)
     return ConstrainedQuery(
         text=text,
         calories=calories,
@@ -88,7 +88,7 @@ def parse_query(
     experiments swap it in without touching the constraint logic.
     """
     vocab = vocab or load_vocabulary()
-    constrained = constrain_query(query)
+    constrained = constrain_query(query, vocab)
 
     available = matcher(constrained.available_context, vocab)
     excluded = matcher(constrained.exclusion_context, vocab)

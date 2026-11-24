@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import pickle
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+import pytest
+from scipy.sparse import csr_matrix
 
 from evaluation.evaluate_retrieval import evaluate_retriever, generate_in_memory_queries
 from src.pipeline2.retriever import CandidateRetriever
@@ -47,6 +51,7 @@ def _make_dummy_corpus() -> pd.DataFrame:
             "canonical_text": "chicken potato carrot onion garlic celery",
             "directions": ["Boil all ingredients until tender."],
             "total_calories": 482.0,
+            "calories_per_serving": 241.0,
             "calorie_coverage": 1.0,
         },
         {
@@ -57,6 +62,7 @@ def _make_dummy_corpus() -> pd.DataFrame:
             "canonical_text": "flour milk egg butter sugar salt",
             "directions": ["Mix batter and cook on griddle."],
             "total_calories": 520.0,
+            "calories_per_serving": 130.0,
             "calorie_coverage": 1.0,
         },
         {
@@ -67,6 +73,7 @@ def _make_dummy_corpus() -> pd.DataFrame:
             "canonical_text": "ground beef tomato onion garlic pasta",
             "directions": ["Brown beef, simmer with tomato, toss with pasta."],
             "total_calories": 640.0,
+            "calories_per_serving": 320.0,
             "calorie_coverage": 1.0,
         },
         {
@@ -156,3 +163,112 @@ def test_pipeline2_end_to_end_with_artifacts_and_evaluation(tmp_path: Path) -> N
     assert metrics["evaluated_queries"] == 20.0
     assert 0.0 <= metrics["recall@50"] <= 1.0
     assert 0.0 <= metrics["mrr"] <= 1.0
+
+
+def _fitted_retriever() -> tuple[CandidateRetriever, pd.DataFrame]:
+    corpus = _make_dummy_corpus()
+    vectorizer = RecipeVectorizer(max_features=1000, ngram_range=(1, 2), use_staple_downweight=True)
+    recipe_vectors = vectorizer.fit_transform(corpus["canonical_text"].tolist())
+    return CandidateRetriever(vectorizer=vectorizer, recipe_vectors=recipe_vectors, corpus=corpus), corpus
+
+
+def test_query_with_no_shared_terms_returns_empty() -> None:
+    retriever, _ = _fitted_retriever()
+
+    indices, scores = retriever.retrieve_indices({"available_ingredients": ["zzzunknown"]}, top_n=3)
+    assert indices.size == 0 and scores.size == 0
+    assert retriever.retrieve({"available_ingredients": ["zzzunknown"]}, top_n=3) == []
+    assert retriever.retrieve({"available_ingredients": []}, top_n=3) == []
+
+    # a query that does share terms still produces candidates
+    assert retriever.retrieve(DUMMY_STRUCTURED_QUERIES[0], top_n=3)
+
+
+def test_none_query_raises_type_error() -> None:
+    retriever, _ = _fitted_retriever()
+    with pytest.raises(TypeError):
+        retriever.retrieve(None)  # type: ignore[arg-type]
+
+
+def test_non_string_ingredients_are_skipped_not_stringified() -> None:
+    retriever, _ = _fitted_retriever()
+    candidates = retriever.retrieve({"available_ingredients": ["chicken", None, 42, "", "potato"]}, top_n=2)
+    assert candidates and candidates[0]["title"] == "Chicken Potato Soup"
+
+
+def test_shape_mismatch_raises_at_construction() -> None:
+    corpus = _make_dummy_corpus()
+    vectorizer = RecipeVectorizer(max_features=1000, use_staple_downweight=False)
+    recipe_vectors = vectorizer.fit_transform(corpus["canonical_text"].tolist()[:3])
+    with pytest.raises(ValueError, match="rows"):
+        CandidateRetriever(vectorizer=vectorizer, recipe_vectors=recipe_vectors, corpus=corpus)
+
+
+def test_missing_corpus_columns_raise_at_construction() -> None:
+    corpus = _make_dummy_corpus().drop(columns=["calorie_coverage"])
+    vectorizer = RecipeVectorizer(max_features=1000, use_staple_downweight=False)
+    recipe_vectors = vectorizer.fit_transform(corpus["canonical_text"].tolist())
+    with pytest.raises(ValueError, match="calorie_coverage"):
+        CandidateRetriever(vectorizer=vectorizer, recipe_vectors=recipe_vectors, corpus=corpus)
+
+
+def test_candidates_carry_calories_per_serving() -> None:
+    retriever, _ = _fitted_retriever()
+    candidates = retriever.retrieve(DUMMY_STRUCTURED_QUERIES[0], top_n=3)
+    assert candidates[0]["calories_per_serving"] == 241.0
+    assert candidates[0]["total_calories"] == 482.0
+    assert all("calories_per_serving" in candidate for candidate in candidates)
+
+
+def test_missing_per_serving_is_none_not_zero() -> None:
+    corpus = _make_dummy_corpus()
+    corpus.loc[0, "calories_per_serving"] = float("nan")
+    vectorizer = RecipeVectorizer(max_features=1000, use_staple_downweight=False)
+    recipe_vectors = vectorizer.fit_transform(corpus["canonical_text"].tolist())
+    retriever = CandidateRetriever(vectorizer=vectorizer, recipe_vectors=recipe_vectors, corpus=corpus)
+    candidates = retriever.retrieve({"available_ingredients": ["chicken", "potato"]}, top_n=5)
+    row = next(candidate for candidate in candidates if candidate["recipe_id"] == 0)
+    assert row["calories_per_serving"] is None
+    assert row["total_calories"] == 482.0
+
+
+def test_stale_corpus_signature_is_rejected(tmp_path: Path) -> None:
+    corpus = _make_dummy_corpus()
+    corpus_a = tmp_path / "corpus_a.parquet"
+    corpus_b = tmp_path / "corpus_b.parquet"
+    vec_path = tmp_path / "tfidf_vectorizer.pkl"
+    mat_path = tmp_path / "recipe_vectors.pkl"
+    corpus.to_parquet(corpus_a, index=False)
+    fit_corpus_tfidf(
+        corpus_parquet=corpus_a,
+        vectorizer_path=vec_path,
+        vectors_path=mat_path,
+        use_staple_downweight=False,
+    )
+
+    changed = corpus.copy()
+    changed.loc[0, "canonical_text"] = "different canonical ingredients"
+    changed.to_parquet(corpus_b, index=False)
+
+    with pytest.raises(ValueError, match="different corpus snapshot"):
+        CandidateRetriever.from_artifacts(
+            corpus_path=corpus_b,
+            vectorizer_path=vec_path,
+            vectors_path=mat_path,
+        )
+
+
+def test_load_rejects_matrix_with_wrong_feature_count(tmp_path: Path) -> None:
+    corpus = _make_dummy_corpus()
+    vectorizer = RecipeVectorizer(max_features=1000, use_staple_downweight=False)
+    recipe_vectors = vectorizer.fit_transform(corpus["canonical_text"].tolist())
+    vec_path = tmp_path / "tfidf_vectorizer.pkl"
+    mat_path = tmp_path / "recipe_vectors.pkl"
+    vectorizer.save(recipe_vectors, vectorizer_path=vec_path, vectors_path=mat_path)
+
+    bad = csr_matrix(np.ones((recipe_vectors.shape[0], 3), dtype=np.float32))
+    with mat_path.open("wb") as fh:
+        pickle.dump(bad, fh)
+
+    with pytest.raises(ValueError, match="features"):
+        RecipeVectorizer.load(vectorizer_path=vec_path, vectors_path=mat_path)

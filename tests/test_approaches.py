@@ -2,10 +2,22 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from src.pipeline1.approaches import available_approaches, get_approach, trace_parse_query
 from src.pipeline1.query_parser import load_vocabulary, parse_query
+
+ROOT = Path(__file__).resolve().parents[1]
+P2_ARTIFACTS_READY = all(
+    (ROOT / path).exists()
+    for path in (
+        "data/processed/recipes.parquet",
+        "artifacts/tfidf_vectorizer.pkl",
+        "artifacts/recipe_vectors.pkl",
+    )
+)
 
 
 @pytest.fixture(scope="module")
@@ -60,6 +72,10 @@ def test_ner_approach_requires_artifacts(tmp_path):
         missing._load()
 
 
+@pytest.mark.skipif(
+    not P2_ARTIFACTS_READY,
+    reason="P2 artifacts missing; run the README quickstart build first",
+)
 def test_p2_approaches_share_candidate_schema():
     from src.pipeline2.approaches import TfidfApproach
 
@@ -67,7 +83,15 @@ def test_p2_approaches_share_candidate_schema():
     candidates = approach.retrieve(
         {"available_ingredients": ["chicken", "potato"], "excluded_ingredients": []}, top_n=5
     )
-    required = {"recipe_id", "title", "canonical_ingredients", "tfidf_score", "total_calories", "calorie_coverage"}
+    required = {
+        "recipe_id",
+        "title",
+        "canonical_ingredients",
+        "tfidf_score",
+        "total_calories",
+        "calories_per_serving",
+        "calorie_coverage",
+    }
     assert candidates and required.issubset(candidates[0].keys())
     # harness compatibility (evaluate_retriever reads these directly)
     assert approach.recipe_ids is not None

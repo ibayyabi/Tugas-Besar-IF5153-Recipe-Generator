@@ -52,30 +52,40 @@ def build_processed_corpus(
             raw_ingredients = _parse_list_field(row.get("ingredients", ""))
             ner_terms = _parse_list_field(row.get("NER", ""))
             directions = _parse_list_field(row.get("directions", ""))
+            title = (row.get("title") or "").strip()
 
-            canonical = normalizer.extract_canonical_ingredients(ner_terms, known_only=False)
-            calorie_info = calorie_estimator.estimate_recipe_calories(
+            estimate = calorie_estimator.estimate_recipe(
                 raw_ingredients,
                 ner_ingredients=ner_terms,
+                directions=directions,
+                title=title,
             )
 
-            if not canonical:
-                parsed_names = [
-                    str(entry["canonical"] or entry["ingredient"] or "")
-                    for entry in calorie_info["parsed_ingredients"]
-                ]
-                canonical = normalizer.extract_canonical_ingredients(parsed_names, known_only=False)
+            # NER alone under-parses some recipes. Only for those (fewer than
+            # three canonical terms) borrow the estimator's matched canonicals;
+            # applying it to well-parsed recipes would let one component stand
+            # in for a composite raw line and silently rewrite retrieval text.
+            canonical_names = list(
+                normalizer.extract_canonical_ingredients(ner_terms, known_only=False)
+            )
+            if len(canonical_names) < 3:
+                for item in estimate.items:
+                    if item.canonical and item.canonical not in canonical_names:
+                        canonical_names.append(item.canonical)
 
             records.append(
                 {
                     "recipe_id": index,
-                    "title": (row.get("title") or "").strip(),
+                    "title": title,
                     "ingredients": raw_ingredients,
-                    "canonical_ingredients": canonical,
-                    "canonical_text": " ".join(canonical),
+                    "canonical_ingredients": canonical_names,
+                    "canonical_text": " ".join(canonical_names),
                     "directions": directions,
-                    "total_calories": float(calorie_info["total_calories"]),
-                    "calorie_coverage": float(calorie_info["calorie_coverage"]),
+                    "total_calories": float(estimate.total_calories or 0.0),
+                    "calories_per_serving": float(estimate.calories_per_serving or 0.0),
+                    "estimated_servings": int(estimate.estimated_servings),
+                    "servings_source": estimate.servings_source,
+                    "calorie_coverage": round(float(estimate.match_ratio), 4),
                     "source": (row.get("source") or "").strip(),
                     "link": (row.get("link") or "").strip(),
                 }

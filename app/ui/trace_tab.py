@@ -50,7 +50,7 @@ def _candidate_rows(p2_trace) -> list[dict]:
             "title": c["title"][:60],
             "score": c["tfidf_score"],
             "#ingredients": len(c["canonical_ingredients"]),
-            "kcal": c["total_calories"],
+            "kcal/serving": c.get("calories_per_serving"),
         }
         for i, c in enumerate(p2_trace.candidates)
     ]
@@ -214,6 +214,8 @@ def render_p2_trace(p2_trace, compact: bool = False) -> None:
 
     st.subheader("Pipeline 2 — Candidate Recipe Retrieval")
     st.caption(f"Approach: `{p2_trace.approach}` ({p2_trace.score_type}) · top-{p2_trace.extras.get('top_n', '?')}")
+    if not p2_trace.candidates:
+        st.warning(p2_trace.no_match_reason or "No candidates matched the query.")
 
     left, right = st.columns([1, 2])
     with left:
@@ -236,6 +238,8 @@ def render_p2_trace(p2_trace, compact: bool = False) -> None:
 
 def _render_p2_compact(p2_trace) -> None:
     """Chat-bubble variant: candidates first, query representation nested."""
+    if not p2_trace.candidates:
+        st.warning(p2_trace.no_match_reason or "No candidates matched the query.")
     st.dataframe(pd.DataFrame(_candidate_rows(p2_trace)), use_container_width=True, hide_index=True)
     with st.expander("🔎 Query representation & term weights"):
         st.code(p2_trace.query_text or "(empty)")
@@ -266,6 +270,9 @@ def render_p3_trace(recommendation, config, compact: bool = False) -> None:
     )
 
     st.markdown("**Score composition (weighted components per recipe)**")
+    if not recommendation.recommendations:
+        st.info(recommendation.no_match_reason or "No recommendations to chart.")
+        return
     rows = []
     for ranked in recommendation.recommendations:
         components = score_components(ranked, config)
@@ -305,6 +312,9 @@ def render_p3_trace(recommendation, config, compact: bool = False) -> None:
 
 def _render_p3_compact(recommendation, config) -> None:
     """Chat-bubble variant: the score chart only; cards above carry per-recipe detail."""
+    if not recommendation.recommendations:
+        st.info(recommendation.no_match_reason or "No recommendations to chart.")
+        return
     rows = []
     for ranked in recommendation.recommendations:
         row = {"recipe": f"#{ranked.rank} {ranked.recipe.title[:38]}"}

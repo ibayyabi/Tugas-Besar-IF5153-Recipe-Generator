@@ -6,7 +6,8 @@ and the UI can swap them freely:
 * ``retrieve(structured_query, top_n) -> list[dict]`` — candidate dicts with the
   exact schema ``pipeline3.models.CandidateRecipe.from_dict`` consumes
   (``recipe_id``, ``title``, ``ingredients``, ``canonical_ingredients``,
-  ``directions``, ``total_calories``, ``calorie_coverage``, ``tfidf_score``);
+  ``directions``, ``total_calories``, ``calories_per_serving``,
+  ``calorie_coverage``, ``tfidf_score``);
 * ``trace(structured_query, top_n) -> RetrievalTrace`` — query terms, weights,
   and per-candidate scores for the UI.
 """
@@ -18,11 +19,16 @@ from pathlib import Path
 
 import numpy as np
 
-from src.pipeline2.retriever import CandidateRetriever
+from src.pipeline2.retriever import (
+    CandidateRetriever,
+    REQUIRED_CORPUS_COLUMNS,
+    _row_calories_per_serving as _calories_per_serving,
+)
 from src.pipeline2.vectorizer import (
     DEFAULT_VECTORS_PATH,
     DEFAULT_VECTORIZER_PATH,
     RecipeVectorizer,
+    corpus_signature,
     query_to_text,
 )
 
@@ -43,6 +49,7 @@ class RetrievalTrace:
     query_terms: list[dict[str, float]] = field(default_factory=list)  # [{"term", "weight"}]
     candidates: list[dict[str, object]] = field(default_factory=list)
     extras: dict[str, object] = field(default_factory=dict)
+    no_match_reason: str | None = None
 
 
 class RetrievalApproach:
@@ -133,13 +140,22 @@ class TfidfApproach(RetrievalApproach):
                 terms.append({"term": str(feature_names[idx]), "weight": round(float(weight), 4)})
             terms.sort(key=lambda item: item["weight"], reverse=True)
 
+        query_text = query_to_text(structured_query)
         candidates = self.retrieve(structured_query, top_n=top_n)
+        no_match_reason = None
+        if not candidates:
+            no_match_reason = (
+                "No query ingredients were provided."
+                if not query_text.strip()
+                else "No recipe shares a TF-IDF term with the query ingredients."
+            )
         return RetrievalTrace(
             approach=self.name,
-            query_text=query_to_text(structured_query),
+            query_text=query_text,
             score_type="tfidf-cosine",
             query_terms=terms[:20],
             candidates=candidates,
+            no_match_reason=no_match_reason,
             extras={
                 "top_n": top_n,
                 "matrix_shape": list(self.retriever.recipe_vectors.shape),
@@ -182,10 +198,50 @@ class DenseApproach(RetrievalApproach):
         if self._vectors is not None:
             return
         meta = self._load_meta()
-        self._vectors = np.load(self._vectors_path)
+        vectors = np.load(self._vectors_path)
         import pandas as pd
 
-        self._corpus = pd.read_parquet(meta["corpus_path"]).reset_index(drop=True)
+        corpus_path = Path(meta["corpus_path"])
+        if not corpus_path.is_absolute() and not corpus_path.exists():
+            corpus_path = ROOT / corpus_path
+        if not corpus_path.exists():
+            raise FileNotFoundError(
+                f"dense corpus not found at {corpus_path} (meta corpus_path={meta['corpus_path']!r}); "
+                "run scripts/encode_dense_corpus.py first"
+            )
+        corpus = pd.read_parquet(corpus_path).reset_index(drop=True)
+        missing = [column for column in REQUIRED_CORPUS_COLUMNS if column not in corpus.columns]
+        if missing:
+            raise ValueError(
+                f"dense corpus is missing required columns {missing}; "
+                "rebuild it with src.preprocessing.build_corpus.build_processed_corpus"
+            )
+        if vectors.shape[0] != len(corpus):
+            raise ValueError(
+                f"dense vectors have {vectors.shape[0]} rows but corpus {corpus_path} has {len(corpus)} recipes; "
+                "artifacts are stale — rerun scripts/encode_dense_corpus.py"
+            )
+        declared = meta.get("n_recipes")
+        if declared is not None and int(declared) != vectors.shape[0]:
+            raise ValueError(
+                f"dense meta declares n_recipes={declared} but dense_vectors.npy has {vectors.shape[0]} rows; "
+                "rerun scripts/encode_dense_corpus.py"
+            )
+        declared_dim = meta.get("dim")
+        if declared_dim is not None and int(declared_dim) != vectors.shape[1]:
+            raise ValueError(
+                f"dense meta declares dim={declared_dim} but dense_vectors.npy has {vectors.shape[1]} columns; "
+                "rerun scripts/encode_dense_corpus.py"
+            )
+        declared_signature = meta.get("corpus_signature")
+        if declared_signature and declared_signature != corpus_signature(corpus):
+            raise ValueError(
+                "dense vectors were built from a different corpus snapshot "
+                f"(meta {declared_signature}, corpus {corpus_signature(corpus)}); "
+                "rerun scripts/encode_dense_corpus.py"
+            )
+        self._vectors = vectors
+        self._corpus = corpus
 
     def score_all(self, structured_query: dict | list[str] | str) -> np.ndarray:
         self._ensure_artifacts()
@@ -205,7 +261,7 @@ class DenseApproach(RetrievalApproach):
         self._ensure_artifacts()
         scores = self.score_all(structured_query)
         total = len(scores)
-        if total == 0 or top_n <= 0:
+        if total == 0 or top_n <= 0 or float(np.max(scores, initial=0.0)) <= 0.0:
             return np.array([], dtype=np.int64), np.array([], dtype=np.float32)
         k = min(top_n, total)
         top_idx = np.argpartition(scores, -k)[-k:]
@@ -214,15 +270,9 @@ class DenseApproach(RetrievalApproach):
 
     def retrieve(self, structured_query: dict | list[str] | str, top_n: int = 50) -> list[dict]:
         self._ensure_artifacts()
-        scores = self.score_all(structured_query)
-        total = len(scores)
-        if total == 0 or top_n <= 0:
-            return []
-        k = min(top_n, total)
-        top_idx = np.argpartition(scores, -k)[-k:]
-        ordered = top_idx[np.argsort(scores[top_idx])[::-1]]
+        indices, scores = self.retrieve_indices(structured_query, top_n=top_n)
         candidates: list[dict[str, object]] = []
-        for idx in ordered:
+        for idx, score in zip(indices, scores):
             row = self._corpus.iloc[int(idx)]
             candidates.append(
                 {
@@ -232,8 +282,9 @@ class DenseApproach(RetrievalApproach):
                     "canonical_ingredients": list(row["canonical_ingredients"]),
                     "directions": list(row["directions"]),
                     "total_calories": float(row["total_calories"]),
+                    "calories_per_serving": _calories_per_serving(row),
                     "calorie_coverage": float(row["calorie_coverage"]),
-                    "tfidf_score": round(float(scores[idx]), 6),
+                    "tfidf_score": round(float(score), 6),
                 }
             )
         return candidates
@@ -241,10 +292,18 @@ class DenseApproach(RetrievalApproach):
     def trace(self, structured_query: dict | list[str] | str, top_n: int = 50) -> RetrievalTrace:
         query_text = query_to_text(structured_query)
         candidates = self.retrieve(structured_query, top_n=top_n)
+        no_match_reason = None
+        if not candidates:
+            no_match_reason = (
+                "No query ingredients were provided."
+                if not query_text.strip()
+                else "No recipe is semantically close to the query ingredients."
+            )
         return RetrievalTrace(
             approach=self.name,
             query_text=query_text,
             score_type="dense-cosine",
+            no_match_reason=no_match_reason,
             query_terms=[{"term": word, "weight": 1.0} for word in query_text.split()],
             candidates=candidates,
             extras={

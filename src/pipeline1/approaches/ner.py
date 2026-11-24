@@ -17,8 +17,10 @@ from src.pipeline1.approaches.base import ApproachTrace, IngredientApproach, Ing
 from src.preprocessing.ingredient_normalizer import Vocabulary, normalize_ingredient
 
 DEFAULT_MODEL_DIR = Path(__file__).resolve().parents[3] / "artifacts" / "ner_model"
-# DistilBERT's positional limit; training used short queries, so this only
-# stops long inputs from being silently cut at 96 tokens.
+# Ceiling = DistilBERT's positional limit (512). Anything past it is dropped
+# rather than silently cut at 96 tokens as it used to be; scripts/train_ner.py
+# uses the same 512 so training and inference agree.
+# ponytail: hard cutoff at 512 subtokens, chunk-and-merge if queries ever exceed it.
 MAX_LENGTH = 512
 
 

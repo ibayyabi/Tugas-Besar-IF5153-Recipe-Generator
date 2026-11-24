@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def render_comparison() -> None:
@@ -84,7 +88,7 @@ def _run_p2_experiment() -> list[dict]:
     from evaluation.evaluate_retrieval import evaluate_retriever, generate_in_memory_queries
     from src.pipeline2.approaches import DenseApproach, TfidfApproach
 
-    corpus = pd.read_parquet("data/processed/recipes.parquet")
+    corpus = pd.read_parquet(ROOT / "data" / "processed" / "recipes.parquet")
     queries = generate_in_memory_queries(corpus, num_queries=100)
     rows = []
     for approach in (TfidfApproach(), DenseApproach()):
@@ -104,33 +108,34 @@ def _run_p3_ablation(num_queries: int = 30) -> list[dict]:
     import warnings
 
     warnings.filterwarnings("ignore")
-    from pathlib import Path
 
-    root = Path(__file__).resolve().parents[2]
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
+    try:
+        if str(ROOT) not in sys.path:
+            sys.path.insert(0, str(ROOT))
 
-    from evaluation.evaluate_ranking import LocalTfidfRetriever, evaluate_model
-    from src.pipeline3 import RecipeCalorieEstimator
-    from src.pipeline3.models import RankingConfig, StructuredQuery
-    from src.pipeline3.reranker import MultiCriteriaReranker
+        from evaluation.evaluate_ranking import LocalTfidfRetriever, evaluate_model
+        from src.pipeline3 import RecipeCalorieEstimator
+        from src.pipeline3.models import RankingConfig, StructuredQuery
+        from src.pipeline3.reranker import MultiCriteriaReranker
 
-    reranker = MultiCriteriaReranker()
-    estimator = RecipeCalorieEstimator()
-    retriever = LocalTfidfRetriever(root / "data" / "samples" / "recipes_sample.csv", normalizer=reranker.normalizer)
-    raw_queries = json.loads((root / "data" / "test" / "annotated_queries.json").read_text(encoding="utf-8"))["queries"][:num_queries]
+        reranker = MultiCriteriaReranker()
+        estimator = RecipeCalorieEstimator()
+        retriever = LocalTfidfRetriever(ROOT / "data" / "samples" / "recipes_sample.csv", normalizer=reranker.normalizer)
+        raw_queries = json.loads((ROOT / "data" / "test" / "annotated_queries.json").read_text(encoding="utf-8"))["queries"][:num_queries]
 
-    query_candidates = []
-    calorie_cache: dict[int, float | None] = {}
-    for entry in raw_queries:
-        sq = StructuredQuery.from_dict(entry["expected"], raw_query=entry["query"])
-        cands = retriever.retrieve(sq, estimator=estimator, calorie_cache=calorie_cache, top_n=50)
-        query_candidates.append((entry["id"], sq, cands))
+        query_candidates = []
+        calorie_cache: dict = {}
+        for entry in raw_queries:
+            sq = StructuredQuery.from_dict(entry["expected"], raw_query=entry["query"])
+            cands = retriever.retrieve(sq, estimator=estimator, calorie_cache=calorie_cache, top_n=50)
+            query_candidates.append((entry["id"], sq, cands))
 
-    configs = [
-        ("Model A: TF-IDF Only", RankingConfig.ablation_model_a()),
-        ("Model B: +Coverage", RankingConfig.ablation_model_b()),
-        ("Model C: +Missing Pen.", RankingConfig.ablation_model_c()),
-        ("Model D: Full", RankingConfig.ablation_model_d()),
-    ]
-    return [evaluate_model(name, config, reranker, query_candidates, top_k=3) for name, config in configs]
+        configs = [
+            ("Model A: TF-IDF Only", RankingConfig.ablation_model_a()),
+            ("Model B: +Coverage", RankingConfig.ablation_model_b()),
+            ("Model C: +Missing Pen.", RankingConfig.ablation_model_c()),
+            ("Model D: Full", RankingConfig.ablation_model_d()),
+        ]
+        return [evaluate_model(name, config, reranker, query_candidates, top_k=3) for name, config in configs]
+    except Exception as error:  # missing fixture/artifact — show why instead of crashing the tab
+        return [{"model": "ablation", "error": f"{type(error).__name__}: {error}"}]
